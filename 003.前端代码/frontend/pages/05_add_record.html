@@ -1,0 +1,486 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#fff8f9;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "tertiary": "#ae2f34",
+          "surface-dim": "#e2d7da",
+          "outline-variant": "#dac0c4",
+          "on-primary-fixed": "#3f0018",
+          "on-secondary-fixed": "#002018",
+          "surface-container": "#f6ebee",
+          "surface-container-low": "#fcf1f4",
+          "on-primary-container": "#79243f",
+          "tertiary-fixed-dim": "#ffb3b0",
+          "on-tertiary-container": "#88111d",
+          "primary-fixed": "#ffd9e0",
+          "on-surface": "#1f1a1d",
+          "on-secondary-container": "#00725c",
+          "on-secondary-fixed-variant": "#005140",
+          "secondary-container": "#75f9d4",
+          "surface-container-high": "#f0e5e8",
+          "on-background": "#1f1a1d",
+          "surface-container-lowest": "#ffffff",
+          "on-tertiary-fixed-variant": "#8c1520",
+          "surface-container-highest": "#eae0e3",
+          "inverse-on-surface": "#f9eef1",
+          "secondary-fixed": "#75f9d4",
+          "inverse-surface": "#342f31",
+          "on-tertiary-fixed": "#410006",
+          "secondary": "#006b56",
+          "on-primary": "#ffffff",
+          "on-primary-fixed-variant": "#7d2742",
+          "outline": "#877275",
+          "background": "#fff8f9",
+          "surface-variant": "#eae0e3",
+          "primary-container": "#ff8fab",
+          "primary": "#9b3f5a",
+          "surface": "#fff8f9",
+          "inverse-primary": "#ffb1c2",
+          "tertiary-fixed": "#ffdad8",
+          "secondary-fixed-dim": "#55dcb9",
+          "error-container": "#ffdad6",
+          "surface-tint": "#9b3f5a",
+          "tertiary-container": "#ff928f",
+          "on-error": "#ffffff",
+          "surface-bright": "#fff8f9",
+          "on-secondary": "#ffffff",
+          "error": "#ba1a1a",
+          "on-surface-variant": "#544245",
+          "on-error-container": "#93000a",
+          "primary-fixed-dim": "#ffb1c2",
+          "on-tertiary": "#ffffff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-xs": "0.25rem",
+          "space-md": "1rem",
+          "gutter": "1rem",
+          "space-xl": "2rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1.5rem",
+          "margin": "1rem"
+        },
+        "fontFamily": {
+          "body-lg": ["Plus Jakarta Sans"],
+          "headline-xl": ["Quicksand"],
+          "body-md": ["Plus Jakarta Sans"],
+          "label-sm": ["Plus Jakarta Sans"],
+          "headline-lg": ["Quicksand"],
+          "body-sm": ["Plus Jakarta Sans"],
+          "label-lg": ["Plus Jakarta Sans"],
+          "label-md": ["Plus Jakarta Sans"],
+          "headline-md": ["Quicksand"]
+        },
+        "fontSize": {
+          "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0px", "fontWeight": "500" }],
+          "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.5px", "fontWeight": "700" }],
+          "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0px", "fontWeight": "400" }],
+          "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.4px", "fontWeight": "600" }],
+          "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.3px", "fontWeight": "600" }],
+          "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+          "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+          "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+          "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "0px", "fontWeight": "600" }]
+        }
+      }
+    }
+  }
+</script><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Quicksand:wght@600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    @keyframes proto-fade-in {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-fade-in { animation: proto-fade-in 0.18s ease-out; }
+    .material-symbols-outlined { user-select: none; }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="财务管家 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"><span class="text-headline-md font-headline-md text-on-surface">记一笔</span></div><button aria-label="个人中心" type="button" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform cursor-pointer" onclick="location.href='10_profile.html'"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></button></div></header><main class="flex flex-col relative w-full px-gutter pt-16 pb-24 bg-[#FFF4F7] flex-1"><div class="flex flex-col w-full pb-12">
+<!-- Top Segmented Switcher: Expense vs Income -->
+<div class="flex justify-center mb-space-lg">
+<div class="bg-surface-container-high p-space-xs rounded-full flex gap-space-xs w-64 shadow-sm">
+<button class="flex-1 py-2 rounded-full text-label-lg transition-all bg-primary text-on-primary shadow-sm" id="tab-expense" onclick="switchTab('expense')">支出</button>
+<button class="flex-1 py-2 rounded-full text-label-lg transition-all text-on-surface-variant hover:text-on-surface" id="tab-income" onclick="switchTab('income')">收入</button>
+</div>
+</div>
+<!-- Big Amount Display Card -->
+<div class="bg-surface-container-low rounded-xl p-space-xl shadow-sm mb-space-xl flex flex-col items-center justify-center relative overflow-hidden">
+<div class="absolute -right-10 -bottom-10 w-32 h-32 rounded-full bg-primary-container/20 pointer-events-none" id="amount-deco"></div>
+<span class="text-body-sm text-on-surface-variant mb-space-sm">输入金额</span>
+<div class="flex items-center gap-space-xs">
+<span class="text-headline-lg font-headline-lg text-primary" id="currency-symbol">¥</span>
+<input class="bg-transparent text-headline-xl font-headline-xl text-on-surface text-center w-48 focus:outline-none placeholder:text-surface-dim" id="amount-input" readonly="" type="text" value="0.00">
+</div>
+</div>
+<!-- Category Grid (九宫格) -->
+<div class="mb-space-xl">
+<div class="flex justify-between items-center mb-space-md px-space-xs">
+<span class="text-label-lg text-on-surface-variant">选择分类</span>
+<span class="text-body-sm text-primary font-bold">轻触切换</span>
+</div>
+<div class="grid grid-cols-3 gap-space-md" id="category-grid">
+<!-- 分类九宫格由页尾脚本按「分类管理（13）」数据动态渲染：支出/收入各一套 -->
+
+</div>
+</div>
+<!-- Detail Inputs Card: Note, Date, Payment Method -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm mb-space-xl flex flex-col gap-space-lg">
+<!-- Note Input -->
+<div class="flex items-center gap-space-sm bg-surface-container-lowest rounded-xl px-space-md py-3 shadow-sm">
+<span class="material-symbols-outlined text-primary">edit_note</span>
+<input class="bg-transparent w-full text-on-surface text-body-md focus:outline-none placeholder:text-surface-dim" id="note-input" placeholder="这笔钱花在哪里了？" type="text">
+</div>
+<!-- Date Picker & Payment Method Row -->
+<div class="flex items-center justify-between gap-space-sm">
+<!-- 日期栏：点开弹日历直选年月日（与 06/07 页同款控件） -->
+<button class="flex items-center gap-space-sm bg-surface-container-lowest rounded-xl px-space-md py-2.5 shadow-sm flex-1 cursor-pointer hover:bg-primary-fixed/40 transition-all active:scale-[0.98] text-left" id="date-pill" onclick="openCalendar()" type="button">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+<span class="text-on-surface text-body-sm flex-1" id="date-label"></span>
+<span class="material-symbols-outlined text-outline text-[18px]">expand_more</span>
+</button>
+</div>
+<!-- Payment Method Pills -->
+<div>
+<span class="text-body-sm text-on-surface-variant block mb-space-sm" id="pay-label">支付方式</span>
+<!-- 账户药丸由页尾脚本按「账户管理（12）」数据动态渲染 -->
+<div class="flex flex-wrap gap-space-sm" id="pay-grid"></div>
+</div>
+</div>
+<!-- Number Pad Simulation -->
+<div class="grid grid-cols-4 gap-space-sm mb-space-xl bg-surface-container-low p-space-md rounded-xl shadow-sm">
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('1')">1</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('2')">2</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('3')">3</button>
+<button class="py-4 bg-surface-container-highest text-tertiary rounded-lg font-headline-md hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('C')">C</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('4')">4</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('5')">5</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('6')">6</button>
+<button class="py-4 bg-surface-container-highest text-on-surface rounded-lg font-headline-md hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('+')">+</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('7')">7</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('8')">8</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('9')">9</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('.')">.</button>
+<button class="col-span-2 py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('00')">00</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('0')">0</button>
+<button class="py-4 bg-surface-container-highest text-on-surface rounded-lg flex items-center justify-center hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('del')"><span class="material-symbols-outlined">backspace</span></button>
+</div>
+<!-- Big Pink Save Button with Continuous Accounting Support -->
+<div class="sticky bottom-4 z-10 pt-space-xs">
+<button class="w-full py-4 rounded-full bg-primary-container text-on-primary-container font-headline-md text-body-lg shadow-lg hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-space-sm" id="save-btn" onclick="handleSave()">
+<span class="material-symbols-outlined">check_circle</span>
+<span class="">保存并继续记账</span>
+</button>
+</div>
+<!-- Success Toast Overlay -->
+<div class="fixed inset-x-0 top-20 flex justify-center pointer-events-none opacity-0 transition-opacity duration-300 z-50" id="success-toast">
+<div class="bg-primary text-on-primary px-space-lg py-3 rounded-full shadow-lg flex items-center gap-space-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-bold">记账成功！小主真棒~</span>
+</div>
+</div>
+<!-- Add Category Modal（新建分类弹窗，风格与全站弹窗一致） -->
+<div class="fixed inset-0 z-[70] items-center justify-center p-gutter bg-inverse-surface/40 backdrop-blur-sm animate-fade-in" id="add-cat-modal" onclick="if(event.target===this)closeAddCat()" style="display:none">
+<div class="w-full max-w-xs bg-surface rounded-3xl p-space-md shadow-2xl flex flex-col">
+<h3 class="font-headline-md text-headline-md text-on-surface text-center mb-space-sm" id="add-cat-title">新建分类</h3>
+<input class="w-full h-11 px-space-md rounded-2xl bg-surface-container-low border border-surface-container-high text-body-md font-body-md text-on-surface placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all mb-space-md" id="new-cat-input" maxlength="6" onkeydown="if(event.key==='Enter')confirmAddCat()" placeholder="输入分类名称，如：撸猫开销" type="text"/>
+<div class="grid grid-cols-2 gap-3">
+<button class="h-11 rounded-full bg-surface-container-high text-on-surface font-label-lg active:scale-95 transition-all" onclick="closeAddCat()" type="button">取消</button>
+<button class="h-11 rounded-full bg-primary text-on-primary font-label-lg shadow-md active:scale-95 transition-all" onclick="confirmAddCat()" type="button">添加</button>
+</div>
+</div>
+</div>
+<!-- Calendar Popup（点日期栏弹出，居中直选年月日；与 06/07 页弹窗同款） -->
+<div class="fixed inset-0 z-[70] items-center justify-center p-gutter bg-inverse-surface/40 backdrop-blur-sm animate-fade-in" id="calendar-pop" onclick="if(event.target===this)closeCalendar()" style="display:none">
+<div class="w-full max-w-xs bg-surface rounded-3xl p-space-md shadow-2xl flex flex-col">
+<div class="flex items-center justify-between mb-space-sm">
+<button aria-label="上一年" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(-1,'y')" type="button">
+<span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_left</span>
+</button>
+<button aria-label="上一月" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(-1,'m')" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<span class="font-headline-md text-headline-md text-on-surface" id="cal-title"></span>
+<button aria-label="下一月" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(1,'m')" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+<button aria-label="下一年" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(1,'y')" type="button">
+<span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_right</span>
+</button>
+</div>
+<div class="grid grid-cols-7 text-center text-label-sm text-outline mb-space-xs" id="cal-week"></div>
+<div class="grid grid-cols-7 gap-y-space-xs place-items-center" id="cal-grid"></div>
+<div class="flex items-center justify-between pt-space-sm mt-space-sm border-t border-surface-container-low">
+<button class="px-space-md py-1.5 rounded-full bg-primary-fixed/60 text-primary font-label-md text-label-md hover:bg-primary-fixed transition-all active:scale-95" onclick="gotoToday()" type="button">回到今天</button>
+<button class="px-space-md py-1.5 rounded-full text-outline font-label-md text-label-md hover:bg-surface-container transition-all active:scale-95" onclick="closeCalendar()" type="button">关闭</button>
+</div>
+</div>
+</div>
+<script>
+    /* 分类与账户数据：仅内存演示——页内新增/选择当页即时生效，刷新即还原下方初始数据；
+       正式的保存与增删改查待后续接入数据库再实现（与「账户管理（12）/ 分类管理（13）」同一约定） */
+    let cats = {
+      expense: [
+        { emoji: '🍜', name: '餐饮' },
+        { emoji: '🚇', name: '交通' },
+        { emoji: '🏠', name: '居家' },
+        { emoji: '🎮', name: '娱乐' },
+        { emoji: '🛍', name: '购物' },
+        { emoji: '💊', name: '医疗' }
+      ],
+      income: [
+        { emoji: '💰', name: '工资' },
+        { emoji: '🧰', name: '劳务' },
+        { emoji: '✨', name: '外快' },
+        { emoji: '📈', name: '理财' }
+      ]
+    };
+    let accounts = [
+      { emoji: '💰', name: '现金' },
+      { emoji: '💙', name: '支付宝' },
+      { emoji: '💚', name: '微信' },
+      { emoji: '🏦', name: '招商银行卡' }
+    ];
+    /* 进页清除旧版残留的演示键（演示数据已改为仅内存，不再读写 localStorage） */
+    try { localStorage.removeItem('fgj_demo_cats'); localStorage.removeItem('fgj_demo_accounts'); } catch (e) { /* 忽略 */ }
+
+    let curTab = 'expense';                    // 当前支出/收入
+    let catSel = { expense: 0, income: 0 };    // 两套画面各自记住选中的分类
+    let paySel = { expense: 0, income: 0 };    // 各自记住选中的账户
+
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    /* 支出=樱花粉（primary），收入=薄荷绿（secondary）：切 Tab 即换整套画面与文案 */
+    function switchTab(type) {
+      curTab = type;
+      const expBtn = document.getElementById('tab-expense');
+      const incBtn = document.getElementById('tab-income');
+      if (type === 'expense') {
+        expBtn.className = "flex-1 py-2 rounded-full text-label-lg transition-all bg-primary text-on-primary shadow-sm";
+        incBtn.className = "flex-1 py-2 rounded-full text-label-lg transition-all text-on-surface-variant hover:text-on-surface";
+      } else {
+        incBtn.className = "flex-1 py-2 rounded-full text-label-lg transition-all bg-secondary text-on-secondary shadow-sm";
+        expBtn.className = "flex-1 py-2 rounded-full text-label-lg transition-all text-on-surface-variant hover:text-on-surface";
+      }
+      document.getElementById('amount-deco').className = 'absolute -right-10 -bottom-10 w-32 h-32 rounded-full pointer-events-none ' +
+        (type === 'expense' ? 'bg-primary-container/20' : 'bg-secondary-container/30');
+      document.getElementById('currency-symbol').className = 'text-headline-lg font-headline-lg ' +
+        (type === 'expense' ? 'text-primary' : 'text-secondary');
+      document.getElementById('note-input').placeholder = type === 'expense' ? '这笔钱花在哪里了？' : '这笔钱从哪儿来呀？';
+      document.getElementById('pay-label').textContent = type === 'expense' ? '支付方式' : '收款账户';
+      document.getElementById('save-btn').className = 'w-full py-4 rounded-full font-headline-md text-body-lg shadow-lg hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-space-sm ' +
+        (type === 'expense' ? 'bg-primary-container text-on-primary-container' : 'bg-secondary-container text-on-secondary-container');
+      renderCats();
+      renderPay();
+    }
+
+    /* 分类九宫格：emoji + 名称，读「分类管理」当前类型的数据，末位恒为「新分类」 */
+    function renderCats() {
+      const grid = document.getElementById('category-grid');
+      const arr = cats[curTab] || [];
+      if (catSel[curTab] >= arr.length) catSel[curTab] = Math.max(0, arr.length - 1);
+      grid.innerHTML = '';
+      arr.forEach(function (c, i) {
+        const on = i === catSel[curTab];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'category-btn flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group border-2 ' +
+          (on ? (curTab === 'expense' ? 'border-primary' : 'border-secondary') : 'border-transparent');
+        const circ = on
+          ? (curTab === 'expense'
+              ? 'bg-primary-container/30 text-on-primary-container'
+              : 'bg-secondary-container/60 text-on-secondary-container')
+          : 'bg-surface-container text-on-surface-variant';
+        btn.innerHTML =
+          '<div class="w-12 h-12 rounded-full flex items-center justify-center mb-space-sm group-hover:scale-110 transition-transform ' + circ + '">' +
+            '<span class="text-2xl leading-none">' + c.emoji + '</span>' +
+          '</div>' +
+          '<span class="text-body-md font-medium text-on-surface">' + esc(c.name) + '</span>';
+        btn.onclick = function () { selectCategory(i); };
+        grid.appendChild(btn);
+      });
+      const add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-all border-2 border-dashed border-outline-variant group';
+      add.innerHTML =
+        '<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-primary mb-space-sm group-hover:rotate-90 transition-transform">' +
+          '<span class="material-symbols-outlined">add</span>' +
+        '</div>' +
+        '<span class="text-body-md font-medium text-on-surface-variant">新分类</span>';
+      add.onclick = addNewCategory;
+      grid.appendChild(add);
+    }
+
+    function selectCategory(i) {
+      catSel[curTab] = i;
+      renderCats();
+    }
+
+    /* 支付/收款账户药丸：emoji + 名称，读「账户管理」的数据 */
+    function renderPay() {
+      const wrap = document.getElementById('pay-grid');
+      wrap.innerHTML = '';
+      accounts.forEach(function (a, i) {
+        const on = i === paySel[curTab];
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pay-btn px-space-md py-2 rounded-full text-body-sm font-medium transition-all ' +
+          (on
+            ? (curTab === 'expense' ? 'bg-primary text-on-primary shadow-xs' : 'bg-secondary text-on-secondary shadow-xs')
+            : 'bg-surface-container text-on-surface-variant');
+        b.innerHTML = '<span class="mr-1">' + a.emoji + '</span>' + esc(a.name);
+        b.onclick = function () { selectPayment(i); };
+        wrap.appendChild(b);
+      });
+    }
+
+    function selectPayment(i) {
+      paySel[curTab] = i;
+      renderPay();
+    }
+
+    function appendNum(val) {
+      const input = document.getElementById('amount-input');
+      let current = input.value;
+      if (current === '0.00') current = '';
+
+      if (val === 'C') {
+        input.value = '0.00';
+        return;
+      }
+      if (val === 'del') {
+        current = current.slice(0, -1);
+        input.value = current === '' ? '0.00' : current;
+        return;
+      }
+      if (val === '.' && current.includes('.')) return;
+
+      input.value = current + val;
+    }
+
+    function addNewCategory() {
+      const modal = document.getElementById('add-cat-modal');
+      const input = document.getElementById('new-cat-input');
+      document.getElementById('add-cat-title').textContent = '新建' + (curTab === 'expense' ? '支出' : '收入') + '分类';
+      input.value = '';
+      modal.style.display = 'flex';
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function closeAddCat() {
+      document.getElementById('add-cat-modal').style.display = 'none';
+    }
+
+    /* 新分类仅存内存（默认 ✨ 图标）：当页即时可见并选中，刷新后即还原 */
+    function confirmAddCat() {
+      const input = document.getElementById('new-cat-input');
+      const name = (input.value || '').trim();
+      if (!name) { input.focus(); return; }
+      cats[curTab].push({ emoji: '✨', name: name });
+      catSel[curTab] = cats[curTab].length - 1;
+      renderCats();
+      closeAddCat();
+    }
+
+    function handleSave() {
+      const toast = document.getElementById('success-toast');
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+
+      const btn = document.getElementById('save-btn');
+      btn.classList.add('animate-pulse');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+        btn.classList.remove('animate-pulse');
+        document.getElementById('amount-input').value = '0.00';
+      }, 1500);
+    }
+
+    /* —— 日期控件（与 06/07 同款；本页无 < > 步进钮，点日期栏弹日历直选年月日）—— */
+    const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
+    const today = () => { const t = new Date(); return { y: t.getFullYear(), m: t.getMonth() + 1, d: t.getDate() }; };
+    const daysInMonth = (y, m) => new Date(y, m, 0).getDate();   // m 取 1~12，闰年由 Date 自行处理
+    const fmtDate = c => c.y + '年' + c.m + '月' + c.d + '日';
+
+    let cur = today();                    // 当前选中日期（默认今天）
+    let viewY = cur.y, viewM = cur.m;     // 日历弹窗正在展示的年月
+
+    function renderDate() {
+      document.getElementById('date-label').textContent = fmtDate(cur);
+    }
+
+    function openCalendar() {
+      viewY = cur.y; viewM = cur.m;
+      renderCal();
+      document.getElementById('calendar-pop').style.display = 'flex';
+    }
+
+    function closeCalendar() {
+      document.getElementById('calendar-pop').style.display = 'none';
+    }
+
+    function calStep(n, unit) {   // 日历标题翻页：月进位跨年
+      if (unit === 'y') { viewY += n; }
+      else {
+        viewM += n;
+        if (viewM > 12) { viewM = 1; viewY++; }
+        if (viewM < 1) { viewM = 12; viewY--; }
+      }
+      renderCal();
+    }
+
+    function renderCal() {
+      document.getElementById('cal-title').textContent = viewY + '年' + viewM + '月';
+      document.getElementById('cal-week').innerHTML = WEEK.map(w => '<span>' + w + '</span>').join('');
+      const grid = document.getElementById('cal-grid');
+      grid.innerHTML = '';
+      const first = new Date(viewY, viewM - 1, 1).getDay();   // 当月 1 日是周几
+      const dim = daysInMonth(viewY, viewM);
+      const t = today();
+      for (let i = 0; i < first; i++) grid.appendChild(document.createElement('span'));
+      for (let d = 1; d <= dim; d++) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = d;
+        const sel = d === cur.d && viewM === cur.m && viewY === cur.y;
+        const isToday = d === t.d && viewM === t.m && viewY === t.y;
+        b.className = 'h-9 w-9 rounded-full flex items-center justify-center text-label-lg font-bold transition-all active:scale-95 ' +
+          (sel ? 'bg-primary text-on-primary shadow-md'
+               : isToday ? 'text-primary bg-primary-fixed/50 hover:bg-primary-fixed'
+               : 'text-on-surface hover:bg-surface-container');
+        b.onclick = () => pickDay(viewY, viewM, d);
+        grid.appendChild(b);
+      }
+    }
+
+    function pickDay(y, m, d) {
+      cur = { y: y, m: m, d: d };
+      renderDate();
+      closeCalendar();
+    }
+
+    function gotoToday() {
+      cur = today();
+      renderDate();
+      closeCalendar();
+    }
+
+    switchTab('expense');
+    renderDate();
+  </script>
+</div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-around items-center h-20 px-space-xs"><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="flow" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="text-label-sm">流水</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 transition-all text-primary font-bold" data-path="add" href="#"><div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-md"><span class="material-symbols-outlined">add</span></div><span class="text-label-sm">记一笔</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="stats" href="#"><span class="material-symbols-outlined">bar_chart</span><span class="text-label-sm">统计</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="profile" href="#"><span class="material-symbols-outlined">account_circle</span><span class="text-label-sm">我的</span></a></div></nav>
+<!-- proto-nav -->
+<script src="../assets/proto-nav.js?v=20261019" data-page="05_add_record"></script>
+</body></html>

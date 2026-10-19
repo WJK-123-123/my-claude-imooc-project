@@ -1,0 +1,317 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#fff8f9;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "tertiary": "#ae2f34",
+          "surface-dim": "#e2d7da",
+          "outline-variant": "#dac0c4",
+          "on-primary-fixed": "#3f0018",
+          "on-secondary-fixed": "#002018",
+          "surface-container": "#f6ebee",
+          "surface-container-low": "#fcf1f4",
+          "on-primary-container": "#79243f",
+          "tertiary-fixed-dim": "#ffb3b0",
+          "on-tertiary-container": "#88111d",
+          "primary-fixed": "#ffd9e0",
+          "on-surface": "#1f1a1d",
+          "on-secondary-container": "#00725c",
+          "on-secondary-fixed-variant": "#005140",
+          "secondary-container": "#75f9d4",
+          "surface-container-high": "#f0e5e8",
+          "on-background": "#1f1a1d",
+          "surface-container-lowest": "#ffffff",
+          "on-tertiary-fixed-variant": "#8c1520",
+          "surface-container-highest": "#eae0e3",
+          "inverse-on-surface": "#f9eef1",
+          "secondary-fixed": "#75f9d4",
+          "inverse-surface": "#342f31",
+          "on-tertiary-fixed": "#410006",
+          "secondary": "#006b56",
+          "on-primary": "#ffffff",
+          "on-primary-fixed-variant": "#7d2742",
+          "outline": "#877275",
+          "background": "#fff8f9",
+          "surface-variant": "#eae0e3",
+          "primary-container": "#ff8fab",
+          "primary": "#9b3f5a",
+          "surface": "#fff8f9",
+          "inverse-primary": "#ffb1c2",
+          "tertiary-fixed": "#ffdad8",
+          "secondary-fixed-dim": "#55dcb9",
+          "error-container": "#ffdad6",
+          "surface-tint": "#9b3f5a",
+          "tertiary-container": "#ff928f",
+          "on-error": "#ffffff",
+          "surface-bright": "#fff8f9",
+          "on-secondary": "#ffffff",
+          "error": "#ba1a1a",
+          "on-surface-variant": "#544245",
+          "on-error-container": "#93000a",
+          "primary-fixed-dim": "#ffb1c2",
+          "on-tertiary": "#ffffff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-xs": "0.25rem",
+          "space-md": "1rem",
+          "gutter": "1rem",
+          "space-xl": "2rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1.5rem",
+          "margin": "1rem"
+        },
+        "fontFamily": {
+          "body-lg": ["Plus Jakarta Sans"],
+          "headline-xl": ["Quicksand"],
+          "body-md": ["Plus Jakarta Sans"],
+          "label-sm": ["Plus Jakarta Sans"],
+          "headline-lg": ["Quicksand"],
+          "body-sm": ["Plus Jakarta Sans"],
+          "label-lg": ["Plus Jakarta Sans"],
+          "label-md": ["Plus Jakarta Sans"],
+          "headline-md": ["Quicksand"]
+        },
+        "fontSize": {
+          "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0px", "fontWeight": "500" }],
+          "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.5px", "fontWeight": "700" }],
+          "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0px", "fontWeight": "400" }],
+          "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.4px", "fontWeight": "600" }],
+          "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.3px", "fontWeight": "600" }],
+          "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+          "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+          "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+          "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "0px", "fontWeight": "600" }]
+        }
+      }
+    }
+  }
+</script><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Quicksand:wght@600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="财务管家 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"><span class="text-headline-md font-headline-md text-on-surface">记一笔</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex flex-col relative w-full px-gutter pt-16 pb-24 bg-[#FFF4F7] flex-1"><div class="flex flex-col w-full pb-12">
+<!-- Top Segmented Switcher: Expense vs Income -->
+<div class="flex justify-center mb-space-lg">
+<div class="bg-surface-container-high p-space-xs rounded-full flex gap-space-xs w-64 shadow-sm">
+<button class="flex-1 py-2 rounded-full text-label-lg transition-all bg-primary text-on-primary shadow-sm" id="tab-expense" onclick="switchTab('expense')">支出</button>
+<button class="flex-1 py-2 rounded-full text-label-lg transition-all text-on-surface-variant hover:text-on-surface" id="tab-income" onclick="switchTab('income')">收入</button>
+</div>
+</div>
+<!-- Big Amount Display Card -->
+<div class="bg-surface-container-low rounded-xl p-space-xl shadow-sm mb-space-xl flex flex-col items-center justify-center relative overflow-hidden">
+<div class="absolute -right-10 -bottom-10 w-32 h-32 rounded-full bg-primary-container/20 pointer-events-none"></div>
+<span class="text-body-sm text-on-surface-variant mb-space-sm">输入金额</span>
+<div class="flex items-center gap-space-xs">
+<span class="text-headline-lg font-headline-lg text-primary" id="currency-symbol">¥</span>
+<input class="bg-transparent text-headline-xl font-headline-xl text-on-surface text-center w-48 focus:outline-none placeholder:text-surface-dim" id="amount-input" readonly="" type="text" value="0.00">
+</div>
+</div>
+<!-- Category Grid (九宫格) -->
+<div class="mb-space-xl">
+<div class="flex justify-between items-center mb-space-md px-space-xs">
+<span class="text-label-lg text-on-surface-variant">选择分类</span>
+<span class="text-body-sm text-primary font-bold">轻触切换</span>
+</div>
+<div class="grid grid-cols-3 gap-space-md" id="category-grid">
+<!-- 餐饮 -->
+<button class="category-btn flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group selected border-2 border-primary" onclick="selectCategory(this)">
+<div class="w-12 h-12 rounded-full bg-primary-container/30 flex items-center justify-center text-on-primary-container mb-space-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+</div>
+<span class="text-body-md font-medium text-on-surface">餐饮</span>
+</button>
+<!-- 交通 -->
+<button class="category-btn flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group border-2 border-transparent" onclick="selectCategory(this)">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant mb-space-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<span class="text-body-md font-medium text-on-surface">交通</span>
+</button>
+<!-- 购物 -->
+<button class="category-btn flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group border-2 border-transparent" onclick="selectCategory(this)">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant mb-space-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">shopping_bag</span>
+</div>
+<span class="text-body-md font-medium text-on-surface">购物</span>
+</button>
+<!-- 日用 -->
+<button class="category-btn flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group border-2 border-transparent" onclick="selectCategory(this)">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant mb-space-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">chair</span>
+</div>
+<span class="text-body-md font-medium text-on-surface">日用</span>
+</button>
+<!-- 娱乐 -->
+<button class="category-btn flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group border-2 border-transparent" onclick="selectCategory(this)">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant mb-space-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">sports_esports</span>
+</div>
+<span class="text-body-md font-medium text-on-surface">娱乐</span>
+</button>
+<!-- 新增分类 -->
+<button class="flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-all border-2 border-dashed border-outline-variant group" onclick="addNewCategory()">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-primary mb-space-sm group-hover:rotate-90 transition-transform">
+<span class="material-symbols-outlined">add</span>
+</div>
+<span class="text-body-md font-medium text-on-surface-variant">新分类</span>
+</button>
+</div>
+</div>
+<!-- Detail Inputs Card: Note, Date, Payment Method -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm mb-space-xl flex flex-col gap-space-lg">
+<!-- Note Input -->
+<div class="flex items-center gap-space-sm bg-surface-container-lowest rounded-xl px-space-md py-3 shadow-sm">
+<span class="material-symbols-outlined text-primary">edit_note</span>
+<input class="bg-transparent w-full text-on-surface text-body-md focus:outline-none placeholder:text-surface-dim" placeholder="这笔钱花在哪里了？" type="text">
+</div>
+<!-- Date Picker & Payment Method Row -->
+<div class="flex items-center justify-between gap-space-sm">
+<!-- Date Picker -->
+<div class="flex items-center gap-space-sm bg-surface-container-lowest rounded-xl px-space-md py-2.5 shadow-sm flex-1 cursor-pointer">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_today</span>
+<input class="bg-transparent text-on-surface text-body-sm focus:outline-none w-full" id="date-picker" type="date" value="2023-10-25">
+</div>
+</div>
+<!-- Payment Method Pills -->
+<div>
+<span class="text-body-sm text-on-surface-variant block mb-space-sm">支付方式</span>
+<div class="flex flex-wrap gap-space-sm">
+<button class="pay-btn px-space-md py-2 rounded-full bg-primary text-on-primary text-body-sm font-medium transition-all shadow-xs" onclick="selectPayment(this)">微信</button>
+<button class="pay-btn px-space-md py-2 rounded-full bg-surface-container text-on-surface-variant text-body-sm font-medium transition-all" onclick="selectPayment(this)">支付宝</button>
+<button class="pay-btn px-space-md py-2 rounded-full bg-surface-container text-on-surface-variant text-body-sm font-medium transition-all" onclick="selectPayment(this)">现金</button>
+<button class="pay-btn px-space-md py-2 rounded-full bg-surface-container text-on-surface-variant text-body-sm font-medium transition-all" onclick="selectPayment(this)">银行卡</button>
+</div>
+</div>
+</div>
+<!-- Number Pad Simulation -->
+<div class="grid grid-cols-4 gap-space-sm mb-space-xl bg-surface-container-low p-space-md rounded-xl shadow-sm">
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('1')">1</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('2')">2</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('3')">3</button>
+<button class="py-4 bg-surface-container-highest text-tertiary rounded-lg font-headline-md hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('C')">C</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('4')">4</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('5')">5</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('6')">6</button>
+<button class="py-4 bg-surface-container-highest text-on-surface rounded-lg font-headline-md hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('+')">+</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('7')">7</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('8')">8</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('9')">9</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('.')">.</button>
+<button class="col-span-2 py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('00')">00</button>
+<button class="py-4 bg-surface-container-lowest rounded-lg font-headline-md text-on-surface hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('0')">0</button>
+<button class="py-4 bg-surface-container-highest text-on-surface rounded-lg flex items-center justify-center hover:bg-surface-container active:scale-95 transition-all shadow-xs" onclick="appendNum('del')"><span class="material-symbols-outlined">backspace</span></button>
+</div>
+<!-- Big Pink Save Button with Continuous Accounting Support -->
+<div class="sticky bottom-4 z-10 pt-space-xs">
+<button class="w-full py-4 rounded-full bg-primary-container text-on-primary-container font-headline-md text-body-lg shadow-lg hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-space-sm" id="save-btn" onclick="handleSave()">
+<span class="material-symbols-outlined">check_circle</span>
+<span class="">保存并继续记账</span>
+</button>
+</div>
+<!-- Success Toast Overlay -->
+<div class="fixed inset-x-0 top-20 flex justify-center pointer-events-none opacity-0 transition-opacity duration-300 z-50" id="success-toast">
+<div class="bg-primary text-on-primary px-space-lg py-3 rounded-full shadow-lg flex items-center gap-space-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-bold">记账成功！小主真棒~</span>
+</div>
+</div>
+<script>
+    function switchTab(type) {
+      const expBtn = document.getElementById('tab-expense');
+      const incBtn = document.getElementById('tab-income');
+      if (type === 'expense') {
+        expBtn.className = "flex-1 py-2 rounded-full text-label-lg transition-all bg-primary text-on-primary shadow-sm";
+        incBtn.className = "flex-1 py-2 rounded-full text-label-lg transition-all text-on-surface-variant hover:text-on-surface";
+      } else {
+        incBtn.className = "flex-1 py-2 rounded-full text-label-lg transition-all bg-secondary text-on-secondary shadow-sm";
+        expBtn.className = "flex-1 py-2 rounded-full text-label-lg transition-all text-on-surface-variant hover:text-on-surface";
+      }
+    }
+
+    function selectCategory(btn) {
+      document.querySelectorAll('.category-btn').forEach(b => {
+        b.classList.remove('border-primary', 'selected');
+        b.classList.add('border-transparent');
+        const iconWrap = b.querySelector('div');
+        iconWrap.className = "w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant mb-space-xs group-hover:scale-110 transition-transform";
+      });
+      btn.classList.add('border-primary', 'selected');
+      btn.classList.remove('border-transparent');
+      const iconWrap = btn.querySelector('div');
+      iconWrap.className = "w-12 h-12 rounded-full bg-primary-container/30 flex items-center justify-center text-on-primary-container mb-space-xs group-hover:scale-110 transition-transform";
+    }
+
+    function selectPayment(btn) {
+      document.querySelectorAll('.pay-btn').forEach(b => {
+        b.className = "pay-btn px-space-md py-1.5 rounded-full bg-surface-container text-on-surface-variant text-body-sm font-medium transition-all";
+      });
+      btn.className = "pay-btn px-space-md py-1.5 rounded-full bg-primary text-on-primary text-body-sm font-medium transition-all shadow-xs";
+    }
+
+    function appendNum(val) {
+      const input = document.getElementById('amount-input');
+      let current = input.value;
+      if (current === '0.00') current = '';
+      
+      if (val === 'C') {
+        input.value = '0.00';
+        return;
+      }
+      if (val === 'del') {
+        current = current.slice(0, -1);
+        input.value = current === '' ? '0.00' : current;
+        return;
+      }
+      if (val === '.' && current.includes('.')) return;
+      
+      input.value = current + val;
+    }
+
+    function addNewCategory() {
+      const name = prompt("请输入新分类名称：");
+      if (name) {
+        const grid = document.getElementById('category-grid');
+        const newBtn = document.createElement('button');
+        newBtn.onclick = function() { selectCategory(this); };
+        newBtn.className = "category-btn flex flex-col items-center justify-center p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group border-2 border-transparent";
+        newBtn.innerHTML = `
+          <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant mb-space-xs group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined">star</span>
+          </div>
+          <span class="text-body-md font-medium text-on-surface">${name}</span>
+        `;
+        grid.insertBefore(newBtn, grid.lastElementChild);
+        selectCategory(newBtn);
+      }
+    }
+
+    function handleSave() {
+      const toast = document.getElementById('success-toast');
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      
+      const btn = document.getElementById('save-btn');
+      btn.classList.add('animate-pulse');
+      
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+        btn.classList.remove('animate-pulse');
+        document.getElementById('amount-input').value = '0.00';
+      }, 1500);
+    }
+  </script>
+</div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-around items-center h-20 px-space-xs"><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="flow" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="text-label-sm">流水</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 transition-all text-primary font-bold" data-path="add" href="#"><div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-md"><span class="material-symbols-outlined">add</span></div><span class="text-label-sm">记一笔</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="stats" href="#"><span class="material-symbols-outlined">bar_chart</span><span class="text-label-sm">统计</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="profile" href="#"><span class="material-symbols-outlined">account_circle</span><span class="text-label-sm">我的</span></a></div></nav>
+
+
+
+</body></html>
