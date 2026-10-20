@@ -9,13 +9,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `001.产品PRD(产品经理)/`——产品需求文档（`财务管家-PRD-V1.0.md`，文件名锁定初版号、实际版本以文首版本号为准，当前 V1.6），**全部产品决策的唯一事实来源**
 - `002.产品UI原型(美术设计)/`——Stitch UI 原始美术稿存档（`UI原型/_1~_9、_11` 各屏 + `financial_steward` 设计系统；场景引导屏已随功能砍掉一并删除），是 `003.前端代码` 的上游素材
 - `003.前端代码/frontend/`——Stitch 高保真原型：**无总览页、无根目录 index.html**，默认首页即 `pages/02_login.html`（登录页），共 12 页平铺在 `pages/`（`02_login.html` … `11_settings.html` 主流程 + `12_account_manage`/`13_category_manage` 管理扩展页，登录/注册两页分立，无 04 场景引导页——已删除、登录/注册成功直进记账页，03、05–11 含同名 `.png` 截图，编号即主流程顺序），共享接线脚本 `assets/proto-nav.js`（每页 `</body>` 前经 `data-page` 引用）
+- `003.前端代码/backend/`——正式后端起步（Express 5 + mysql2 + bcryptjs，ESM 无构建）：已实现 F1 注册/登录/登出/会话（`/api/auth/*`）与页面登录守卫（`/pages/` 非公开 `.html` 未登录 302 回登录页），同源静态托管 `../frontend`、`npm start` 跑 3000 端口；`.env` 配数据库连接（已 gitignore）
+- `004.数据库脚本(数据库管理员DBA)/`——数据库设计（`README.md` 设计说明 + `01_schema.sql` 建表 + `02_seed.sql` 附录 A 模板/演示数据；MySQL 8.0+ / utf8mb4，库名 `financial_steward`，8 张表；金额以「分」为整数存 `bill.amount` 并有 CHECK 兜底，`account` 表仅是支付方式标记**无余额字段**）
 
 本仓库所有文档、UI 文案、代码注释均使用中文。
 
 ## 常用命令
 
 ```bash
-# 本地预览 003 原型（页面依赖 Tailwind CDN，需联网）
+# 启动正式后端（F1 注册/登录；同源托管 003 原型页）
+cd 003.前端代码/backend && npm start   # http://localhost:3000（自动跳转登录页）
+
+# 纯原型静态预览（不走后端；页面依赖 Tailwind CDN，需联网）
 cd 003.前端代码/frontend && python -m http.server 8080   # http://localhost:8080/pages/02_login.html
 
 # 改动共享脚本后的语法检查
@@ -26,10 +31,10 @@ cd 003.前端代码/frontend && node --check assets/proto-nav.js
 
 ## 架构
 
-当前仓库无正式代码实现——原 `002.财务管家-Web` 三文件纯原生实现（localStorage 模拟云端、金额分状态机、自定义数字键盘等）已删除；重启实现时另开新编号目录并回读 PRD。现有代码只有 `003.前端代码/frontend/` 高保真原型：
+正式后端自 2026-10-20 起步于 `003.前端代码/backend/`：F1 注册/登录/登出/会话已接真库（注册事务内按模板初始化分类/账户；登录统一错误提示 + 连错 5 次锁 10 分钟；会话沿用 004 设计——Cookie 存令牌明文 + `user_session` 存 SHA-256 哈希 + 30 天滑动续期，鉴权走 `src/middleware/requireAuth.js`），并同源静态托管 `../frontend`；页面守卫在 `server.js`：`/pages/` 下除登录/注册/找回密码外的 `.html` 未带有效会话一律 302 回登录页（截图等非 HTML 与 `/assets` 放行）。`02_login`/`02_register` 表单已接真实 `/api/auth/*`（成功才跳 05 页、失败展示中文错误行）；10/11 页「退出登录」弹窗确认键调全局 `doLogout()` 清会话后回登录页；10 我的页昵称、「注册于 YYYY-MM-DD」小字与徽章「已坚持记账 N 天 · UID」均取自 `/api/auth/me`（user 表实时数据，N = DATEDIFF 当天=1；未登录/无后端时回落演示文案「小桃子酱」）。其余页面内容仍为下述原型演示。原 `002.财务管家-Web` 三文件纯原生实现已删除。`003.前端代码/frontend/` 高保真原型：
 
 - 零框架静态 HTML + Tailwind CDN、无构建。脚本分两层，改前先分清改哪层：
-  - **共享脚本 `assets/proto-nav.js`**（每页 `</body>` 前经 `data-page` 引用）：只做页间跳转接线——按 PRD 流程给页内真实按钮接线（RULES 自上而下首条命中优先）。原「悬浮 🧭 导航」粉钮及其面板已于 2026-10-19 删除，`proto-nav.css` 一并移除。
+  - **共享脚本 `assets/proto-nav.js`**（每页 `</body>` 前经 `data-page` 引用）：页间跳转接线（RULES 自上而下首条命中优先）；2026-10-20 起兼做登录守卫客户端兜底（非公开页加载后查 `/api/auth/me`，仅 401 才跳登录页——404/网络异常不跳，兼容 python 纯原型预览）与全局 `doLogout()`（10/11 页退出弹窗共用）。原「悬浮 🧭 导航」粉钮及其面板已于 2026-10-19 删除，`proto-nav.css` 一并移除。
   - **各页内联 `<script>`**：页面特有行为都在这一层（05 分类/账户动态渲染与支出/收入双主题、06/07 日期药丸+日历小框、07 导出 CSV、10 头像上传、11 退出/注销弹窗、12/13 管理 CRUD）。改跳转改共享脚本，改某页行为改该页内联脚本。
 - 演示数据约定（2026-10-19 起）：`12 账户管理`/`13 分类管理`/`05 记一笔`（分类/账户数据及页内新增分类）的增删改查仅内存演示——当页即时生效、刷新即还原初始数据（正式存取待接数据库），进页时清除旧版残留的 `fgj_demo_accounts`/`fgj_demo_cats` 键；头像 `fgj_demo_avatar`（10 我的）；07 页「导出数据」为纯前端 Blob 演示（导出本在 V1 范围外，勿当正式功能扩散）。均为原型演示，非正式数据层。
 

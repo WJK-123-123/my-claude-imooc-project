@@ -144,6 +144,7 @@
 </label>
 <a aria-label="找回密码 / 忘记密码" class="font-body-sm text-body-sm text-primary hover:underline hover:text-on-surface transition-colors cursor-pointer select-none" href="#" title="通过手机号或邮箱找回密码">忘记密码？</a>
 </div>
+<p id="form-error" class="hidden font-body-sm text-body-sm text-on-error-container text-center"></p>
 <button class="w-full h-12 mt-space-md bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg rounded-2xl shadow-md shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-space-xs" type="submit">
 <span class="">开启记账之旅</span>
 <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -182,6 +183,47 @@
         icon.textContent = 'visibility_off';
       }
     }
+
+    // 正式接线（003.前端代码/backend）：登录表单 → POST /api/auth/login，
+    // 成功后直进记账页（PRD F1-3）；失败展示后端返回的中文提示（统一「用户名或密码错误」）
+    (function () {
+      var form = document.getElementById('form-login');
+      var btn = form.querySelector('button[type="submit"]');
+      var errBox = document.getElementById('form-error');
+      function showMsg(text) {
+        errBox.textContent = text || '';
+        errBox.classList.toggle('hidden', !text);
+      }
+      form.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        if (btn.disabled) return;
+        if (!document.getElementById('login-agreement').checked) {
+          showMsg('请先阅读并同意用户协议与隐私政策'); // PRD F1 验收 7：未勾选协议不可登录
+          return;
+        }
+        var username = form.querySelector('input[type="text"]').value.trim();
+        var password = form.querySelector('input[type="password"]').value;
+        if (!username || !password) { showMsg('请输入用户名和密码'); return; }
+        btn.disabled = true;
+        showMsg('');
+        fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: username, password: password })
+        }).then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (data) {
+            return { ok: r.ok, data: data };
+          });
+        }).then(function (res) {
+          if (res.ok) { location.href = '05_add_record.html'; return; } // 登录成功直进主界面
+          btn.disabled = false;
+          showMsg(res.data.message || '登录失败，请稍后再试');
+        }).catch(function () {
+          btn.disabled = false;
+          showMsg('网络异常，请稍后再试');
+        });
+      });
+    })();
   </script>
 </div></main>
 <script>
@@ -203,5 +245,5 @@
     })();
   </script>
 <!-- proto-nav -->
-<script src="../assets/proto-nav.js?v=20261019" data-page="02_login"></script>
+<script src="../assets/proto-nav.js?v=20261020-2" data-page="02_login"></script>
 </body></html>

@@ -11,16 +11,17 @@
   var PAGE = (document.currentScript && document.currentScript.dataset.page) || '';
 
   /* 接线规则：[匹配文本, 匹配方式 exact|contains, 目标目录]，靠前的优先。
-     关键词均取自各页真实按钮文字（2026-10-18 全量核对）。 */
+     关键词均取自各页真实按钮文字（2026-10-18 全量核对）。
+     注意：登录/注册提交键（开启记账之旅 / 加入财务小窝）已改由各页内联脚本调用
+     后端 /api/auth/*（003.前端代码/backend），校验通过、登录态建立后才跳 05_add_record，
+     故不再在此直跳（2026-10-20 正式接线）。 */
   var RULES = {
     '02_login': [
       ['忘记密码', 'contains', '03_forgot_password'],
-      ['立即注册', 'contains', '02_register'],      /* 没有账号？立即注册 → 注册页 */
-      ['开启记账之旅', 'contains', '05_add_record']  /* 登录提交键，登录成功 → 记一笔（04 场景引导已删） */
+      ['立即注册', 'contains', '02_register']       /* 没有账号？立即注册 → 注册页 */
     ],
     '02_register': [
-      ['直接登录', 'contains', '02_login'],          /* 已有账号？直接登录 → 登录页 */
-      ['加入财务小窝', 'contains', '05_add_record']  /* 注册提交键，注册成功自动登录 → 记一笔（04 场景引导已删） */
+      ['直接登录', 'contains', '02_login']           /* 已有账号？直接登录 → 登录页 */
     ],
     '03_forgot_password': [
       ['重置密码并登录', 'contains', '02_login'], /* 重设完成回登录页（PRD F1-5） */
@@ -69,8 +70,8 @@
     '10_profile': [
       ['账户管理', 'contains', '12_account_manage'],
       ['分类管理', 'contains', '13_category_manage'],
-      ['退出登录', 'contains', '11_settings'],
-      ['注销', 'contains', '11_settings'],
+      /* 退出登录/注销入口已改走本页弹窗（showLogoutModal/showDeleteModal，
+         退出确认键 doLogout 调后端 /api/auth/logout，2026-10-20），不再跳 11_settings */
       ['记一笔', 'exact', '05_add_record'],
       ['流水', 'exact', '06_transaction_history'],
       ['统计', 'exact', '07_statistics_a']
@@ -119,4 +120,25 @@
       }
     }
   );
+
+  /* —— 登录守卫（客户端兜底，2026-10-20）——
+     服务端已对 /pages/ 下非公开 .html 做 302 拦截；此处兜底浏览器返回键/内存缓存快照：
+     仅当后端明确返回 401 才跳登录页，404/网络异常不跳——兼容 python http.server
+     纯原型预览（无后端时页面照常可看）。 */
+  var PUBLIC_PAGES = { '02_login': 1, '02_register': 1, '03_forgot_password': 1 };
+  if (PAGE && !PUBLIC_PAGES[PAGE]) {
+    fetch('/api/auth/me').then(function (r) {
+      if (r.status === 401) location.replace('02_login.html');
+    }).catch(function () {});
+  }
+
+  /* —— 退出登录（10/11 页弹窗确认键共用）——
+     POST /api/auth/logout 清会话后回登录页（PRD F1-8）；请求失败也照样回登录页，
+     兼容纯原型预览。 */
+  window.doLogout = function (btn) {
+    if (btn) btn.disabled = true;
+    fetch('/api/auth/logout', { method: 'POST' })
+      .catch(function () {})
+      .then(function () { location.replace('02_login.html'); });
+  };
 })();

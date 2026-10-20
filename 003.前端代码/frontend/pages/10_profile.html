@@ -53,10 +53,10 @@
 <span class="material-symbols-outlined text-[12px] block">photo_camera</span>
 </div>
 </div>
-<h2 class="text-lg font-bold text-on-surface tracking-tight mb-1" id="profile-name">小桃子酱</h2>
+<h2 class="text-lg font-bold text-on-surface tracking-tight mb-1" id="profile-name"><span id="profile-username">小桃子酱</span> <span class="text-xs font-normal text-on-surface-variant" id="profile-reg"></span></h2>
 <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#FFEBF0] text-primary text-xs font-medium">
 <span class="material-symbols-outlined text-[13px]">military_tech</span>
-<span>已坚持记账 48 天 · UID: 20491</span>
+<span id="profile-badge">已坚持记账 48 天 · UID: 20491</span>
 </div>
 </div>
 <!-- 数据概览卡片（3项对齐微卡） -->
@@ -166,6 +166,22 @@
       ev.target.value = '';   // 允许再次选择同一张图
     }
 
+    /* 正式接线：昵称与注册时间取自当前登录用户（/api/auth/me → user 表）；
+       未登录或后端不可用时保留演示名「小桃子酱」（纯原型预览兼容） */
+    (function fillProfile() {
+      fetch('/api/auth/me').then(function (r) { return r.ok ? r.json() : null; }).then(function (me) {
+        if (!me) return;
+        document.getElementById('profile-username').textContent = me.username;
+        if (me.registeredAt) {
+          document.getElementById('profile-reg').textContent = '注册于 ' + me.registeredAt;
+        }
+        if (me.id && me.joinedDays) {
+          document.getElementById('profile-badge').textContent =
+            '已坚持记账 ' + me.joinedDays + ' 天 · UID: ' + me.id;
+        }
+      }).catch(function () { /* 纯原型预览无后端，忽略 */ });
+    })();
+
     function showLogoutModal() {
       const container = document.getElementById('modal-container');
       container.innerHTML = `
@@ -178,7 +194,7 @@
             <p class="text-xs text-on-surface-variant mb-5 leading-relaxed">退出后本地未同步的数据可能会丢失哦~</p>
             <div class="grid grid-cols-2 gap-2.5 w-full">
               <button onclick="closeModal()" class="h-10 rounded-full bg-[#F5E9EC] text-on-surface text-xs font-semibold active:scale-95 transition-all">取消</button>
-              <button onclick="alert('已安全退出'); closeModal();" class="h-10 rounded-full bg-primary text-white text-xs font-semibold active:scale-95 transition-all shadow-sm">退出</button>
+              <button onclick="doLogout(this)" class="h-10 rounded-full bg-primary text-white text-xs font-semibold active:scale-95 transition-all shadow-sm">退出</button>
             </div>
           </div>
         </div>
@@ -213,5 +229,5 @@
 <!-- 4. 底部导航栏（樱花粉高亮） -->
 <nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-[#FFFBFC]/95 backdrop-blur-xl border-t border-[#F7E5EB] shadow-[0_-2px_12px_rgba(255,143,171,0.08)]"><div class="flex justify-around items-center h-16 px-2"><a class="flex flex-col items-center justify-center gap-1 w-14 h-14 text-on-surface-variant hover:text-primary transition-all" data-path="flow" href="#"><span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="text-[11px] font-medium">流水</span></a><a class="flex flex-col items-center justify-center -mt-4 text-on-surface-variant transition-all" data-path="add" href="#"><div class="w-12 h-12 rounded-full bg-gradient-to-tr from-[#9b3f5a] to-[#FF8FAB] flex items-center justify-center text-white shadow-[0_4px_12px_rgba(255,143,171,0.4)] active:scale-95 transition-transform"><span class="material-symbols-outlined text-[24px]">add</span></div><span class="text-[11px] font-medium mt-1">记一笔</span></a><a class="flex flex-col items-center justify-center gap-1 w-14 h-14 text-on-surface-variant hover:text-primary transition-all" data-path="stats" href="#"><span class="material-symbols-outlined text-[22px]">bar_chart</span><span class="text-[11px] font-medium">统计</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-14 h-14 transition-all text-[#FF8FAB] font-bold" data-path="profile" href="#"><span class="material-symbols-outlined text-[22px] font-variation-settings-'FILL'-1">account_circle</span><span class="text-[11px]">我的</span></a></div></nav>
 <!-- proto-nav -->
-<script src="../assets/proto-nav.js?v=20261019" data-page="10_profile"></script>
+<script src="../assets/proto-nav.js?v=20261020-2" data-page="10_profile"></script>
 </body></html>
