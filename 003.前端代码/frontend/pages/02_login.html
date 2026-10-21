@@ -201,8 +201,8 @@
           showMsg('请先阅读并同意用户协议与隐私政策'); // PRD F1 验收 7：未勾选协议不可登录
           return;
         }
-        var username = form.querySelector('input[type="text"]').value.trim();
-        var password = form.querySelector('input[type="password"]').value;
+        var username = form.querySelector('input[name="login-off"]').value.trim();
+        var password = form.querySelector('input[name="password-off"]').value;
         if (!username || !password) { showMsg('请输入用户名和密码'); return; }
         btn.disabled = true;
         showMsg('');

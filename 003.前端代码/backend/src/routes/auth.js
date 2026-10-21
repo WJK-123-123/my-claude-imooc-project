@@ -73,7 +73,8 @@ router.post('/login', async (req, res, next) => {
     const [rows] = await pool.query(
       `SELECT id, username, password_hash, status, failed_login_count,
               (locked_until IS NOT NULL AND locked_until > NOW()) AS is_locked,
-              TIMESTAMPDIFF(MINUTE, NOW(), locked_until) AS lock_minutes_left
+              TIMESTAMPDIFF(MINUTE, NOW(), locked_until) AS lock_minutes_left,
+              (purge_at IS NOT NULL AND purge_at <= NOW()) AS is_purge_due
          FROM user
         WHERE username = ?`,
       [username]
@@ -93,8 +94,25 @@ router.post('/login', async (req, res, next) => {
     }
 
     if (user.status === 'deleting') {
-      // TODO(F1-9)：冷静期内登录应可撤销注销，待注销功能实现时补充
-      return fail(res, 403, '账号正在注销冷静期，暂无法登录');
+      // 冷静期已满：懒清扫物理删除（等价于定时任务到期执行），随后按「用户名或密码错误」处理
+      if (user.is_purge_due) {
+        // 先删账单（解除对分类的 RESTRICT 引用），再删用户（级联清分类/账户/会话）
+        await pool.query('DELETE FROM bill WHERE user_id = ?', [user.id]);
+        await pool.query('DELETE FROM user WHERE id = ?', [user.id]);
+        await bcrypt.compare(String(password ?? ''), DUMMY_HASH);
+        return fail(res, 401, '用户名或密码错误');
+      }
+      // 冷静期内：密码正确即登录并撤销注销（PRD F1-9「期间登录可撤销注销」）
+      const ok = await bcrypt.compare(String(password ?? ''), user.password_hash);
+      if (!ok) return fail(res, 401, '用户名或密码错误');
+      await pool.query(
+        `UPDATE user SET status = 'active', purge_at = NULL,
+                failed_login_count = 0, locked_until = NULL, last_login_at = NOW()
+          WHERE id = ?`,
+        [user.id]
+      );
+      await createSession(res, user.id);
+      return res.json({ user: { id: user.id, username: user.username } });
     }
 
     const ok = await bcrypt.compare(String(password ?? ''), user.password_hash);
@@ -142,7 +160,34 @@ router.get('/me', requireAuth, (req, res) => {
     username: req.userName,
     registeredAt: req.userRegisteredOn,
     joinedDays: req.userJoinedDays,
+    avatarUrl: req.userAvatarUrl || null,
   });
+});
+
+/* ================= 注销账号（PRD F1-9：密码二次确认 + 7 天冷静期） ================= */
+router.post('/deactivate', requireAuth, async (req, res, next) => {
+  try {
+    const { password } = req.body || {};
+    const [rows] = await pool.query(
+      'SELECT password_hash FROM user WHERE id = ? AND status = ?',
+      [req.userId, 'active']
+    );
+    const user = rows[0];
+    if (!user) return fail(res, 404, '账号状态异常，无法注销');
+    const ok = await bcrypt.compare(String(password ?? ''), user.password_hash);
+    if (!ok) return fail(res, 401, '密码错误');
+
+    // 置 deleting 冷静期（7 天），清空全部会话即登出；期满后由登录懒清扫物理删除
+    await pool.query(
+      "UPDATE user SET status = 'deleting', purge_at = DATE_ADD(NOW(), INTERVAL 7 DAY) WHERE id = ?",
+      [req.userId]
+    );
+    await pool.query('DELETE FROM user_session WHERE user_id = ?', [req.userId]);
+    clearSessionCookie(res);
+    res.json({ message: '注销申请已提交，7 天冷静期内可登录撤销' });
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;

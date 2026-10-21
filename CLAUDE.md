@@ -17,8 +17,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 常用命令
 
 ```bash
-# 启动正式后端（F1 注册/登录；同源托管 003 原型页）
+# 启动正式后端（F1 注册/登录；同源托管 003 原型页；nodemon 监听 src/* 改动自动重启）
 cd 003.前端代码/backend && npm start   # http://localhost:3000（自动跳转登录页）
+# 无需热重载的生产式启动：npm run start:prod（node src/server.js）
 
 # 纯原型静态预览（不走后端；页面依赖 Tailwind CDN，需联网）
 cd 003.前端代码/frontend && python -m http.server 8080   # http://localhost:8080/pages/02_login.html

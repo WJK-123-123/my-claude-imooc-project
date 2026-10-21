@@ -15,7 +15,7 @@ export function sha256(text) {
 export async function getSessionUser(token) {
   if (!token) return null;
   const [rows] = await pool.query(
-    `SELECT s.user_id AS id, u.username, s.token_hash,
+    `SELECT s.user_id AS id, u.username, u.avatar_url, s.token_hash,
               DATE_FORMAT(u.created_at, '%Y-%m-%d') AS registered_on,
               DATEDIFF(NOW(), u.created_at) + 1 AS joined_days
        FROM user_session s

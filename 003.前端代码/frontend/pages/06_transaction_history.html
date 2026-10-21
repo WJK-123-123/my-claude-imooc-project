@@ -104,23 +104,7 @@
     .animate-fade-in { animation: proto-fade-in 0.18s ease-out; }
     .material-symbols-outlined { user-select: none; }
   </style>
-  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="财务管家 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"><span class="text-headline-md font-headline-md text-on-surface">账单流水</span></div><button aria-label="个人中心" type="button" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform cursor-pointer" onclick="location.href='10_profile.html'"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></button></div></header><main class="flex flex-col relative w-full px-6 pt-20 pb-32 bg-[#FFF4F7] flex-1" style="letter-spacing: 0.025em; line-height: 1.625;"><div class="flex flex-col w-full pb-10">
-<!-- Date Switcher（同 07 统计页模式：< > 按天步进跨月跨年，点药丸弹日历） -->
-<div class="flex items-center justify-between mb-6 bg-surface-container-low rounded-2xl p-4 shadow-sm">
-<button aria-label="前一天" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all active:scale-95" onclick="stepDay(-1)" type="button">
-<span class="material-symbols-outlined">chevron_left</span>
-</button>
-<div class="flex items-center gap-space-sm">
-<button class="flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-surface-container-lowest/80 shadow-sm hover:bg-primary-fixed/60 hover:shadow-md transition-all active:scale-95 cursor-pointer" id="date-pill" onclick="openCalendar()" type="button">
-<span class="material-symbols-outlined text-primary text-[18px]">calendar_month</span>
-<span class="text-headline-md font-headline-md text-on-surface tracking-wide" id="date-label">2026年10月18日</span>
-<span class="material-symbols-outlined text-outline text-[16px]">expand_more</span>
-</button>
-</div>
-<button aria-label="后一天" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all active:scale-95" onclick="stepDay(1)" type="button">
-<span class="material-symbols-outlined">chevron_right</span>
-</button>
-</div>
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="财务管家 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"><span class="text-headline-md font-headline-md text-on-surface">账单流水</span><span class="px-2.5 py-0.5 rounded-full bg-primary-fixed/60 text-label-md text-on-primary-container tracking-wide" id="header-month">—</span></div><button aria-label="个人中心" type="button" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform cursor-pointer" onclick="location.href='10_profile.html'"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></button></div></header><main class="flex flex-col relative w-full px-6 pt-20 pb-32 bg-[#FFF4F7] flex-1" style="letter-spacing: 0.025em; line-height: 1.625;"><div class="flex flex-col w-full pb-10">
 <!-- Monthly Summary Card（三指标齐平三等分） -->
 <div class="bg-surface-container-lowest rounded-3xl p-6 mb-8 shadow-[0_4px_24px_rgba(155,63,90,0.06)] relative overflow-hidden">
 <!-- Decorative background glow -->
@@ -132,25 +116,22 @@
 <span class="material-symbols-outlined text-primary text-[18px]">account_balance_wallet</span>
 <span class="">本月结余</span>
 </div>
-<span class="text-body-lg font-headline-md font-bold text-primary tracking-wide">¥ 3,420.00</span>
+<span class="text-body-lg font-headline-md font-bold text-primary tracking-wide" id="sum-balance">¥ 0.00</span>
 </div>
 <div class="flex flex-col items-center text-center gap-1.5">
 <div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant tracking-wide">
 <span class="material-symbols-outlined text-[14px] text-tertiary">arrow_upward</span>
 <span class="">本月支出</span>
 </div>
-<span class="text-body-lg font-headline-md font-bold text-on-surface tracking-wide">¥ 2,850.50</span>
+<span class="text-body-lg font-headline-md font-bold text-on-surface tracking-wide" id="sum-expense">¥ 0.00</span>
 </div>
 <div class="flex flex-col items-center text-center gap-1.5">
 <div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant tracking-wide">
 <span class="material-symbols-outlined text-[14px] text-secondary">arrow_downward</span>
 <span class="">本月收入</span>
 </div>
-<span class="text-body-lg font-headline-md font-bold text-secondary tracking-wide">¥ 6,270.50</span>
+<span class="text-body-lg font-headline-md font-bold text-secondary tracking-wide" id="sum-income">¥ 0.00</span>
 </div>
-</div>
-<div class="flex justify-center pt-4 mt-5 border-t border-surface-container relative">
-<span class="text-label-sm text-primary bg-primary-fixed/50 px-3 py-1 rounded-full tracking-wide">预算剩余 68%</span>
 </div>
 </div>
 <!-- Filter & Search Bar -->
@@ -159,94 +140,14 @@
 <span class="material-symbols-outlined text-primary text-[20px]">receipt_long</span>
 <span class="">收支明细</span>
 </div>
-<div class="flex items-center gap-2">
-<button class="flex items-center gap-1 px-3.5 py-1.5 bg-surface-container rounded-full text-body-sm text-on-surface-variant hover:bg-surface-container-high transition-all tracking-wide">
-<span class="material-symbols-outlined text-[16px]">filter_list</span>
-<span class="">全部类型</span>
-</button>
-</div>
 </div>
 <!-- Transaction List (Grouped by Date) -->
-<div class="flex flex-col gap-8">
-<!-- Date Group: Today -->
-<div class="flex flex-col gap-3.5">
-<div class="flex items-center justify-between text-body-sm text-on-surface-variant px-1 tracking-wide mb-1">
-<span class="font-bold text-on-surface">今天 10月24日</span>
-<span class="tracking-wide">支出 ¥128.00 · 收入 ¥0.00</span>
+<div class="flex flex-col gap-8" id="bill-list"></div>
+<div class="hidden items-center justify-center py-6 text-body-sm text-on-surface-variant" id="list-loading">
+<span class="material-symbols-outlined animate-spin text-primary text-[18px] mr-2">progress_activity</span>
+<span>加载中…</span>
 </div>
-<!-- Item 1 -->
-<div class="bg-surface-container-lowest p-5 rounded-2xl flex items-center justify-between shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:scale-[1.01] transition-all cursor-pointer active:scale-95" onclick="openDetailModal('星巴克咖啡', '¥38.00', '餐饮美食', '今天 14:25', '下午茶，拿铁+可颂', '支出')">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-2xl bg-primary-fixed flex items-center justify-center text-on-primary-fixed shadow-sm">
-<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">coffee</span>
-</div>
-<div class="flex flex-col gap-0.5">
-<span class="text-body-lg font-body-lg text-on-surface tracking-wide leading-relaxed">餐饮美食</span>
-<span class="text-body-sm text-on-surface-variant line-clamp-1 tracking-wide">下午茶，拿铁+可颂</span>
-</div>
-</div>
-<div class="text-right flex flex-col gap-0.5">
-<span class="text-body-lg font-headline-md text-on-surface tracking-wide leading-relaxed">-¥38.00</span>
-<div class="text-body-sm text-on-surface-variant tracking-wide">微信支付</div>
-</div>
-</div>
-<!-- Item 2 -->
-<div class="bg-surface-container-lowest p-5 rounded-2xl flex items-center justify-between shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:scale-[1.01] transition-all cursor-pointer active:scale-95" onclick="openDetailModal('优衣库购物', '¥90.00', '服饰穿搭', '今天 11:15', '换季基础款T恤', '支出')">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-2xl bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed shadow-sm">
-<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">checkroom</span>
-</div>
-<div class="flex flex-col gap-0.5">
-<span class="text-body-lg font-body-lg text-on-surface tracking-wide leading-relaxed">服饰穿搭</span>
-<span class="text-body-sm text-on-surface-variant line-clamp-1 tracking-wide">换季基础款T恤</span>
-</div>
-</div>
-<div class="text-right flex flex-col gap-0.5">
-<span class="text-body-lg font-headline-md text-on-surface tracking-wide leading-relaxed">-¥90.00</span>
-<div class="text-body-sm text-on-surface-variant tracking-wide">支付宝</div>
-</div>
-</div>
-</div>
-<!-- Date Group: Yesterday -->
-<div class="flex flex-col gap-3.5">
-<div class="flex items-center justify-between text-body-sm text-on-surface-variant px-1 tracking-wide mb-1">
-<span class="font-bold text-on-surface">昨天 10月23日</span>
-<span class="tracking-wide">支出 ¥215.50 · 收入 ¥3,500.00</span>
-</div>
-<!-- Item 3 (Income) -->
-<div class="bg-surface-container-lowest p-5 rounded-2xl flex items-center justify-between shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:scale-[1.01] transition-all cursor-pointer active:scale-95" onclick="openDetailModal('公司薪资', '+¥3,500.00', '薪资收入', '昨天 09:00', '10月份绩效预支', '收入')">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-2xl bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-sm">
-<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">payments</span>
-</div>
-<div class="flex flex-col gap-0.5">
-<span class="text-body-lg font-body-lg text-on-surface tracking-wide leading-relaxed">薪资收入</span>
-<span class="text-body-sm text-on-surface-variant line-clamp-1 tracking-wide">10月份绩效预支</span>
-</div>
-</div>
-<div class="text-right flex flex-col gap-0.5">
-<span class="text-body-lg font-headline-md text-secondary tracking-wide leading-relaxed">+¥3,500.00</span>
-<div class="text-body-sm text-on-surface-variant tracking-wide">招商银行</div>
-</div>
-</div>
-<!-- Item 4 -->
-<div class="bg-surface-container-lowest p-5 rounded-2xl flex items-center justify-between shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:scale-[1.01] transition-all cursor-pointer active:scale-95" onclick="openDetailModal('盒马鲜生', '¥215.50', '生活日用', '昨天 19:40', '蔬菜、水果、牛奶', '支出')">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-2xl bg-surface-container-high flex items-center justify-center text-on-surface-variant shadow-sm">
-<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">shopping_cart</span>
-</div>
-<div class="flex flex-col gap-0.5">
-<span class="text-body-lg font-body-lg text-on-surface tracking-wide leading-relaxed">生活日用</span>
-<span class="text-body-sm text-on-surface-variant line-clamp-1 tracking-wide">蔬菜、水果、牛奶</span>
-</div>
-</div>
-<div class="text-right flex flex-col gap-0.5">
-<span class="text-body-lg font-headline-md text-on-surface tracking-wide leading-relaxed">-¥215.50</span>
-<div class="text-body-sm text-on-surface-variant tracking-wide">微信支付</div>
-</div>
-</div>
-</div>
-</div>
+<div class="hidden items-center justify-center py-6 text-body-sm text-outline" id="list-end">— 已经到底啦，没有更多账单了 —</div>
 <!-- Empty State Example -->
 <div class="hidden flex-col items-center justify-center py-16 px-4 text-center" id="empty-state">
 <div class="w-32 h-32 mb-space-md bg-primary-fixed/30 rounded-full flex items-center justify-center relative overflow-hidden">
@@ -273,7 +174,7 @@
 <!-- Modal Body -->
 <div class="flex flex-col items-center py-4 mb-6 border-b border-surface-container">
 <div class="w-16 h-16 rounded-3xl bg-primary-fixed flex items-center justify-center text-on-primary-fixed mb-3 shadow-sm" id="modal-icon-bg">
-<span class="material-symbols-outlined text-[32px]" id="modal-icon" style="font-variation-settings: &quot;FILL&quot; 1;">receipt</span>
+<span class="text-[32px] leading-none" id="modal-icon">📝</span>
 </div>
 <span class="text-body-lg font-body-lg text-on-surface mb-1 tracking-wide" id="modal-category">服饰穿搭</span>
 <span class="text-headline-xl font-headline-xl text-on-surface tracking-wide" id="modal-amount">¥90.00</span>
@@ -288,8 +189,8 @@
 <span class="font-bold text-on-surface" id="modal-time">今天 11:15</span>
 </div>
 <div class="flex justify-between text-body-md tracking-wide">
-<span class="text-on-surface-variant">支付账户</span>
-<span class="font-bold text-on-surface">微信支付</span>
+<span class="text-on-surface-variant">账户</span>
+<span class="font-bold text-on-surface" id="modal-account">—</span>
 </div>
 <div class="flex justify-between text-body-md tracking-wide">
 <span class="text-on-surface-variant">备注摘要</span>
@@ -302,50 +203,172 @@
 </div>
 </div>
 </div>
-<!-- Calendar Popup（点日期药丸弹出，直接选年月日；样式与 07/11 页弹窗同款） -->
-<div class="fixed inset-0 z-[70] items-center justify-center p-gutter bg-inverse-surface/40 backdrop-blur-sm animate-fade-in" id="calendar-pop" onclick="if(event.target===this)closeCalendar()" style="display:none">
-<div class="w-full max-w-xs bg-surface rounded-3xl p-space-md shadow-2xl flex flex-col">
-<div class="flex items-center justify-between mb-space-sm">
-<button aria-label="上一年" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(-1,'y')" type="button">
-<span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_left</span>
-</button>
-<button aria-label="上一月" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(-1,'m')" type="button">
-<span class="material-symbols-outlined text-[18px]">chevron_left</span>
-</button>
-<span class="font-headline-md text-headline-md text-on-surface" id="cal-title">2026年10月</span>
-<button aria-label="下一月" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(1,'m')" type="button">
-<span class="material-symbols-outlined text-[18px]">chevron_right</span>
-</button>
-<button aria-label="下一年" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(1,'y')" type="button">
-<span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_right</span>
-</button>
-</div>
-<div class="grid grid-cols-7 text-center text-label-sm text-outline mb-space-xs" id="cal-week"></div>
-<div class="grid grid-cols-7 gap-y-space-xs place-items-center" id="cal-grid"></div>
-<div class="flex items-center justify-between pt-space-sm mt-space-sm border-t border-surface-container-low">
-<button class="px-space-md py-1.5 rounded-full bg-primary-fixed/60 text-primary font-label-md text-label-md hover:bg-primary-fixed transition-all active:scale-95" onclick="gotoToday()" type="button">回到今天</button>
-<button class="px-space-md py-1.5 rounded-full text-outline font-label-md text-label-md hover:bg-surface-container transition-all active:scale-95" onclick="closeCalendar()" type="button">关闭</button>
-</div>
-</div>
-</div>
 <script>
-    function openDetailModal(title, amount, category, time, note, type) {
-      const modal = document.getElementById('detail-modal');
-      const content = document.getElementById('modal-content');
-      
-      document.getElementById('modal-category').innerText = category;
-      document.getElementById('modal-amount').innerText = amount;
-      document.getElementById('modal-time').innerText = time;
-      document.getElementById('modal-note').innerText = note;
-      document.getElementById('modal-type').innerText = type;
+    /* 06 流水页：本月结余/支出/收入 + 按日收支明细（滚动分页，每页 20 条）。
+       数据来自 /api/bills：summary/dayTotals 覆盖整月，bills 按 offset/limit 分页。
+       金额在 JS 内以「分」整数运算后格式化展示，全程无浮点（PRD 金额硬约定）。 */
+    const PAGE_SIZE = 20;
+    let summary = { income: 0, expense: 0, balance: 0 };
+    let month = '';           // 账单流水旁的实时月份，与 summary 同一次查询返回
+    let dayMap = new Map();   // date -> { expense, income }（整月按日小计，供组头展示）
+    let total = 0;
+    let offset = 0;
+    let loading = false;
+    let hasMore = true;
+    let lastDate = null;      // 已渲染的最后一个日分组日期，跨页时同一天续在同一组内
+
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    // 分 → 元字符串（纯整数运算：千分位逗号 + 两位小数）
+    function centsToYuan(c) {
+      const yuan = Math.floor(c / 100);
+      const fen = c % 100;
+      return String(yuan).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + String(fen).padStart(2, '0');
+    }
+    function dateParts(dateStr) {
+      const p = String(dateStr).split('-');
+      return { y: +p[0], m: +p[1], d: +p[2] };
+    }
+    function dayLabel(dateStr) {   // 组头：今天/昨天/MM月DD日
+      const now = new Date();
+      const todayStr = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+      const yest = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const yestStr = yest.getFullYear() + '-' + pad(yest.getMonth() + 1) + '-' + pad(yest.getDate());
+      const p = dateParts(dateStr);
+      const md = p.m + '月' + p.d + '日';
+      if (dateStr === todayStr) return '今天 ' + md;
+      if (dateStr === yestStr) return '昨天 ' + md;
+      return md;
+    }
+    function fullDate(dateStr) {
+      const p = dateParts(dateStr);
+      return p.y + '年' + p.m + '月' + p.d + '日';
+    }
+
+    function setLoading(on) {
+      const el = document.getElementById('list-loading');
+      if (on) { el.classList.remove('hidden'); el.classList.add('flex'); }
+      else { el.classList.add('hidden'); el.classList.remove('flex'); }
+    }
+    function showEnd() {
+      const el = document.getElementById('list-end');
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+    }
+
+    async function loadMore() {
+      if (loading || !hasMore) return;
+      loading = true;
+      setLoading(true);
+      try {
+        const r = await fetch('/api/bills?offset=' + offset + '&limit=' + PAGE_SIZE);
+        if (r.status === 401) { location.replace('02_login.html'); return; }
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.message || '加载失败');
+        if (offset === 0) {
+          summary = data.summary || { income: 0, expense: 0, balance: 0 };
+          month = data.month || '';
+          total = data.total || 0;
+          dayMap = new Map((data.dayTotals || []).map(function (d) { return [d.date, d]; }));
+          renderMonth();
+          renderSummary();
+          if (total === 0) {
+            document.getElementById('bill-list').classList.add('hidden');
+            const empty = document.getElementById('empty-state');
+            empty.classList.remove('hidden');
+            empty.classList.add('flex');
+            hasMore = false;
+            return;
+          }
+        }
+        const items = data.bills || [];
+        appendItems(items);
+        offset += items.length;
+        hasMore = items.length > 0 && offset < total;
+        if (!hasMore) showEnd();
+      } catch (e) {
+        hasMore = false;   // 网络异常即停止，避免死循环重试
+      } finally {
+        setLoading(false);
+        loading = false;
+      }
+      // 首屏不足一屏且还有数据时自动补拉，保证有滚动条、可继续触发分页
+      if (hasMore && document.documentElement.scrollHeight <= window.innerHeight + 1) {
+        loadMore();
+      }
+    }
+
+    function appendItems(items) {
+      const list = document.getElementById('bill-list');
+      items.forEach(function (b) {
+        if (b.billDate !== lastDate) {
+          lastDate = b.billDate;
+          list.appendChild(makeGroup(b.billDate));
+        }
+        list.lastElementChild.appendChild(makeItem(b));
+      });
+    }
+
+    function makeGroup(dateStr) {
+      const group = document.createElement('div');
+      group.className = 'flex flex-col gap-3.5';
+      const dt = dayMap.get(dateStr) || { expense: 0, income: 0 };
+      const head = document.createElement('div');
+      head.className = 'flex items-center justify-between text-body-sm text-on-surface-variant px-1 tracking-wide mb-1';
+      head.innerHTML =
+        '<span class="font-bold text-on-surface">' + dayLabel(dateStr) + '</span>' +
+        '<span class="tracking-wide">支出 ¥' + centsToYuan(dt.expense) + ' · 收入 ¥' + centsToYuan(dt.income) + '</span>';
+      group.appendChild(head);
+      return group;
+    }
+
+    function makeItem(b) {
+      const isIncome = b.type === 'income';
+      const amount = (isIncome ? '+¥' : '-¥') + centsToYuan(b.amount);
+      const amountCls = isIncome ? 'text-secondary' : 'text-on-surface';
+      const note = b.note
+        ? '<span class="text-body-sm text-on-surface-variant line-clamp-1 tracking-wide">' + esc(b.note) + '</span>'
+        : '';
+      const item = document.createElement('div');
+      item.className = 'bg-surface-container-lowest p-5 rounded-2xl flex items-center justify-between shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:scale-[1.01] transition-all cursor-pointer active:scale-95';
+      item.onclick = function () { openDetail(b); };
+      item.innerHTML =
+        '<div class="flex items-center gap-4">' +
+          '<div class="w-12 h-12 rounded-2xl bg-primary-fixed flex items-center justify-center text-2xl shrink-0">' + esc(b.categoryIcon || '📝') + '</div>' +
+          '<div class="flex flex-col gap-0.5 min-w-0">' +
+            '<span class="text-body-lg font-body-lg text-on-surface tracking-wide leading-relaxed">' + esc(b.categoryName) + '</span>' +
+            note +
+          '</div>' +
+        '</div>' +
+        '<div class="text-right flex flex-col gap-0.5">' +
+          '<span class="text-body-lg font-headline-md ' + amountCls + ' tracking-wide leading-relaxed">' + amount + '</span>' +
+          '<div class="text-body-sm text-on-surface-variant tracking-wide">' + (b.accountName ? esc(b.accountName) : '—') + '</div>' +
+        '</div>';
+      return item;
+    }
+
+    function openDetail(b) {
+      document.getElementById('modal-category').innerText = b.categoryName;
+      document.getElementById('modal-icon').textContent = b.categoryIcon || '📝';
+      document.getElementById('modal-amount').innerText = (b.type === 'income' ? '+' : '-') + '¥' + centsToYuan(b.amount);
+      document.getElementById('modal-time').innerText = fullDate(b.billDate) + ' ' + (b.createdTime || '');
+      document.getElementById('modal-note').innerText = b.note || '—';
+      document.getElementById('modal-type').innerText = b.type === 'income' ? '收入' : '支出';
+      document.getElementById('modal-account').innerText = b.accountName || '—';
 
       const amountEl = document.getElementById('modal-amount');
-      if (type === '收入') {
-        amountEl.className = 'text-headline-xl font-headline-xl text-secondary tracking-wide';
-      } else {
-        amountEl.className = 'text-headline-xl font-headline-xl text-on-surface tracking-wide';
-      }
+      amountEl.className = 'text-headline-xl font-headline-xl ' +
+        (b.type === 'income' ? 'text-secondary' : 'text-on-surface') + ' tracking-wide';
+      document.getElementById('modal-icon-bg').className =
+        'w-16 h-16 rounded-3xl flex items-center justify-center mb-3 shadow-sm ' +
+        (b.type === 'income' ? 'bg-secondary-container text-on-secondary-container' : 'bg-primary-fixed text-on-primary-fixed');
 
+      const modal = document.getElementById('detail-modal');
+      const content = document.getElementById('modal-content');
       modal.classList.remove('opacity-0', 'pointer-events-none');
       content.classList.remove('translate-y-full');
     }
@@ -353,94 +376,30 @@
     function closeDetailModal() {
       const modal = document.getElementById('detail-modal');
       const content = document.getElementById('modal-content');
-      
       modal.classList.add('opacity-0', 'pointer-events-none');
       content.classList.add('translate-y-full');
     }
 
-    /* —— 日期控件（与 07 统计页同款）：< > 按天步进，跨月/跨年自动进位；点药丸弹日历直选 —— */
-    const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
-    const today = () => { const t = new Date(); return { y: t.getFullYear(), m: t.getMonth() + 1, d: t.getDate() }; };
-    const daysInMonth = (y, m) => new Date(y, m, 0).getDate();   // m 取 1~12，闰年由 Date 自行处理
-    const fmtDate = c => c.y + '年' + c.m + '月' + c.d + '日';
-
-    let cur = today();                    // 当前选中日期
-    let viewY = cur.y, viewM = cur.m;     // 日历弹窗正在展示的年月
-
-    function renderDate() {
-      document.getElementById('date-label').textContent = fmtDate(cur);
+    function renderMonth() {
+      const el = document.getElementById('header-month');
+      if (el) el.textContent = month || '—';
     }
 
-    function stepDay(n) {
-      cur.d += n;
-      if (cur.d > daysInMonth(cur.y, cur.m)) {   // 超出本月天数 → 月份+1，12 月再跨年
-        cur.d = 1; cur.m++;
-        if (cur.m > 12) { cur.m = 1; cur.y++; }
-      } else if (cur.d < 1) {                    // 低于 1 日 → 月份-1，落到上月最后一天
-        cur.m--;
-        if (cur.m < 1) { cur.m = 12; cur.y--; }
-        cur.d = daysInMonth(cur.y, cur.m);
+    function renderSummary() {
+      document.getElementById('sum-balance').textContent =
+        (summary.balance < 0 ? '-¥ ' : '¥ ') + centsToYuan(Math.abs(summary.balance));
+      document.getElementById('sum-expense').textContent = '¥ ' + centsToYuan(summary.expense);
+      document.getElementById('sum-income').textContent = '¥ ' + centsToYuan(summary.income);
+    }
+
+    // 电脑向下滚动 / 手机向上滑动，都是滚到底部附近即加载下一页
+    window.addEventListener('scroll', function () {
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200) {
+        loadMore();
       }
-      renderDate();
-    }
+    });
 
-    function openCalendar() {
-      viewY = cur.y; viewM = cur.m;
-      renderCal();
-      document.getElementById('calendar-pop').style.display = 'flex';
-    }
-
-    function closeCalendar() {
-      document.getElementById('calendar-pop').style.display = 'none';
-    }
-
-    function calStep(n, unit) {   // 日历标题翻页：月进位同样跨年
-      if (unit === 'y') { viewY += n; }
-      else {
-        viewM += n;
-        if (viewM > 12) { viewM = 1; viewY++; }
-        if (viewM < 1) { viewM = 12; viewY--; }
-      }
-      renderCal();
-    }
-
-    function renderCal() {
-      document.getElementById('cal-title').textContent = viewY + '年' + viewM + '月';
-      document.getElementById('cal-week').innerHTML = WEEK.map(w => '<span>' + w + '</span>').join('');
-      const grid = document.getElementById('cal-grid');
-      grid.innerHTML = '';
-      const first = new Date(viewY, viewM - 1, 1).getDay();   // 当月 1 日是周几
-      const dim = daysInMonth(viewY, viewM);
-      const t = today();
-      for (let i = 0; i < first; i++) grid.appendChild(document.createElement('span'));
-      for (let d = 1; d <= dim; d++) {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = d;
-        const sel = d === cur.d && viewM === cur.m && viewY === cur.y;
-        const isToday = d === t.d && viewM === t.m && viewY === t.y;
-        b.className = 'h-9 w-9 rounded-full flex items-center justify-center text-label-lg font-bold transition-all active:scale-95 ' +
-          (sel ? 'bg-primary text-on-primary shadow-md'
-               : isToday ? 'text-primary bg-primary-fixed/50 hover:bg-primary-fixed'
-               : 'text-on-surface hover:bg-surface-container');
-        b.onclick = () => pickDay(viewY, viewM, d);
-        grid.appendChild(b);
-      }
-    }
-
-    function pickDay(y, m, d) {
-      cur = { y: y, m: m, d: d };
-      renderDate();
-      closeCalendar();
-    }
-
-    function gotoToday() {
-      cur = today();
-      renderDate();
-      closeCalendar();
-    }
-
-    renderDate();
+    loadMore();
   </script>
 </div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-around items-center h-20 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 transition-all text-primary font-bold" data-path="flow" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="text-label-sm">流水</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all active:scale-95 group" data-path="add" href="#" onclick="console.log('Navigate to 记一笔');">
 <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-md group-hover:brightness-110 group-active:scale-90 transition-all">

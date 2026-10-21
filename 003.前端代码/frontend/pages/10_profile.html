@@ -64,21 +64,21 @@
 <div class="bg-[#FFFBFC] custom-card-shadow rounded-2xl p-3 flex flex-col items-center justify-center border border-[#FFF0F4]">
 <span class="text-xs text-on-surface-variant mb-1 font-medium">累计记账</span>
 <div class="flex items-baseline gap-0.5">
-<span class="text-lg font-bold text-primary font-headline">128</span>
+<span class="text-lg font-bold text-primary font-headline" id="stat-total">128</span>
 <span class="text-[11px] text-on-surface-variant font-normal">笔</span>
 </div>
 </div>
 <div class="bg-[#FFFBFC] custom-card-shadow rounded-2xl p-3 flex flex-col items-center justify-center border border-[#FFF0F4]">
 <span class="text-xs text-on-surface-variant mb-1 font-medium">记账天数</span>
 <div class="flex items-baseline gap-0.5">
-<span class="text-lg font-bold text-primary font-headline">48</span>
+<span class="text-lg font-bold text-primary font-headline" id="stat-days">48</span>
 <span class="text-[11px] text-on-surface-variant font-normal">天</span>
 </div>
 </div>
 <div class="bg-[#FFFBFC] custom-card-shadow rounded-2xl p-3 flex flex-col items-center justify-center border border-[#FFF0F4]">
 <span class="text-xs text-on-surface-variant mb-1 font-medium">本月记账</span>
 <div class="flex items-baseline gap-0.5">
-<span class="text-lg font-bold text-primary font-headline">26</span>
+<span class="text-lg font-bold text-primary font-headline" id="stat-month">26</span>
 <span class="text-[11px] text-on-surface-variant font-normal">笔</span>
 </div>
 </div>
@@ -137,18 +137,19 @@
 <div id="modal-container"></div>
 <input accept="image/*" class="hidden" id="avatar-input" onchange="changeAvatar(event)" type="file"/>
 <script>
-    /* 头像：点击上传本地图片替换（前端演示，localStorage 记忆，刷新不丢） */
-    const AVATAR_KEY = 'fgj_demo_avatar';
-    (function restoreAvatar() {
-      try {
-        const saved = localStorage.getItem(AVATAR_KEY);
-        if (saved) {
-          document.getElementById('avatar-img').src = saved;
-          document.getElementById('avatar-img').classList.remove('hidden');
-          document.getElementById('avatar-emoji').classList.add('hidden');
-        }
-      } catch (e) { /* 隐私模式等场景忽略 */ }
-    })();
+    /* 头像：点击上传本地图片 → 后端落盘并写库（user.avatar_url），刷新后仍显示 */
+    function setAvatar(url) {
+      const img = document.getElementById('avatar-img');
+      const emoji = document.getElementById('avatar-emoji');
+      if (url) {
+        img.src = url;
+        img.classList.remove('hidden');
+        emoji.classList.add('hidden');
+      } else {
+        img.classList.add('hidden');
+        emoji.classList.remove('hidden');
+      }
+    }
 
     function changeAvatar(ev) {
       const f = ev.target.files && ev.target.files[0];
@@ -156,17 +157,26 @@
       if (!/^image\//.test(f.type)) { alert('请选择图片文件'); return; }
       const reader = new FileReader();
       reader.onload = function (e) {
-        const url = e.target.result;
-        document.getElementById('avatar-img').src = url;
-        document.getElementById('avatar-img').classList.remove('hidden');
-        document.getElementById('avatar-emoji').classList.add('hidden');
-        try { localStorage.setItem(AVATAR_KEY, url); } catch (err) { /* 忽略 */ }
+        const dataUrl = e.target.result;
+        fetch('/api/profile/avatar', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatar: dataUrl })
+        }).then(function (r) {
+          return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+        }).then(function (res) {
+          if (res.ok && res.data.avatarUrl) {
+            setAvatar(res.data.avatarUrl);
+          } else {
+            alert(res.data.message || '头像上传失败');
+          }
+        }).catch(function () { alert('网络异常，头像上传失败'); });
       };
       reader.readAsDataURL(f);
       ev.target.value = '';   // 允许再次选择同一张图
     }
 
-    /* 正式接线：昵称与注册时间取自当前登录用户（/api/auth/me → user 表）；
+    /* 正式接线：昵称、注册时间、头像取自当前登录用户（/api/auth/me → user 表）；
        未登录或后端不可用时保留演示名「小桃子酱」（纯原型预览兼容） */
     (function fillProfile() {
       fetch('/api/auth/me').then(function (r) { return r.ok ? r.json() : null; }).then(function (me) {
@@ -179,7 +189,18 @@
           document.getElementById('profile-badge').textContent =
             '已坚持记账 ' + me.joinedDays + ' 天 · UID: ' + me.id;
         }
+        setAvatar(me.avatarUrl || '');
       }).catch(function () { /* 纯原型预览无后端，忽略 */ });
+    })();
+
+    /* 记账统计：累计记账 / 记账天数 / 本月记账（/api/profile/stats → bill 表实时聚合） */
+    (function fillStats() {
+      fetch('/api/profile/stats').then(function (r) { return r.ok ? r.json() : null; }).then(function (s) {
+        if (!s) return;
+        document.getElementById('stat-total').textContent = s.totalCount;
+        document.getElementById('stat-days').textContent = s.daysCount;
+        document.getElementById('stat-month').textContent = s.monthCount;
+      }).catch(function () { /* 无后端时保留演示数字 */ });
     })();
 
     function showLogoutModal() {
@@ -209,15 +230,35 @@
             <div class="w-13 h-13 p-3 rounded-full bg-error-container text-on-error-container flex items-center justify-center mb-3">
               <span class="material-symbols-outlined text-[26px]">warning</span>
             </div>
-            <h3 class="text-base font-bold text-on-surface mb-1.5">注销账号警告</h3>
-            <p class="text-xs text-on-surface-variant mb-5 leading-relaxed">注销后所有记账数据将被永久清空，无法找回，请谨慎操作！</p>
+            <h3 class="text-base font-bold text-on-surface mb-1.5">注销账号</h3>
+            <p class="text-xs text-on-surface-variant mb-4 leading-relaxed">提交后进入 7 天冷静期，冷静期内登录可撤销；期满后所有记账数据将被永久删除，无法找回。</p>
+            <input id="delete-password" type="password" placeholder="请输入登录密码确认" class="w-full h-11 px-4 rounded-full bg-[#F5E9EC] text-on-surface text-sm outline-none focus:ring-2 focus:ring-primary/40 mb-5" />
             <div class="grid grid-cols-2 gap-2.5 w-full">
               <button onclick="closeModal()" class="h-10 rounded-full bg-[#F5E9EC] text-on-surface text-xs font-semibold active:scale-95 transition-all">我再想想</button>
-              <button onclick="alert('账号已注销'); closeModal();" class="h-10 rounded-full bg-error text-white text-xs font-semibold active:scale-95 transition-all shadow-sm">确认注销</button>
+              <button onclick="confirmDeactivate()" class="h-10 rounded-full bg-error text-white text-xs font-semibold active:scale-95 transition-all shadow-sm">确认注销</button>
             </div>
           </div>
         </div>
       `;
+    }
+
+    function confirmDeactivate() {
+      const password = document.getElementById('delete-password').value;
+      if (!password) { alert('请输入登录密码'); return; }
+      fetch('/api/auth/deactivate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
+      }).then(function (r) {
+        return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+      }).then(function (res) {
+        if (res.ok) {
+          alert(res.data.message || '注销申请已提交');
+          location.replace('02_login.html');
+        } else {
+          alert(res.data.message || '操作失败，请稍后再试');
+        }
+      }).catch(function () { alert('网络异常，请稍后再试'); });
     }
 
     function closeModal() {

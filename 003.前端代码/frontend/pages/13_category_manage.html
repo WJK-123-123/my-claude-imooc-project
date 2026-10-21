@@ -131,7 +131,7 @@
 <h3 class="font-headline-md text-headline-md text-on-surface text-center mb-space-sm" id="cat-modal-title">添加分类</h3>
 <div class="flex items-center gap-space-sm mb-space-sm">
 <div class="w-12 h-12 rounded-2xl bg-primary-fixed flex items-center justify-center text-2xl shrink-0" id="cat-emoji-preview">🍜</div>
-<input class="flex-1 h-11 px-space-md rounded-2xl bg-surface-container-low border border-surface-container-high text-body-md font-body-md text-on-surface placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" id="cat-name" maxlength="6" placeholder="分类名称，如：餐饮" type="text"/>
+<input class="flex-1 h-11 px-space-md rounded-2xl bg-surface-container-low border border-surface-container-high text-body-md font-body-md text-on-surface placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" id="cat-name" maxlength="4" placeholder="分类名称，如：餐饮" type="text"/>
 </div>
 <div class="text-label-md text-outline mb-space-xs">选择图标</div>
 <div class="grid grid-cols-8 gap-1.5 mb-space-md" id="cat-emoji-grid"></div>
@@ -156,30 +156,26 @@
 </div>
 </div>
 <script>
-    /* 分类管理：支出/收入分类（emoji + 名称）增删改查。仅内存演示：保存/删除后当页即时可见，
-       刷新即还原下方初始数据；正式持久化待后续接入数据库再实现 */
+    /* 分类管理：支出/收入分类（emoji + 名称）增删改查，已接后端 /api/categories 持久化到数据库 */
     const EMOJIS = ['🍜','☕','🧋','🚇','🚗','✈️','🏠','🎮','🛍','💊','📈','✨','🧰','🎓','🎁','🐾','🌸','📱','💻','🏥','📦','⚽','🎯','🍖','💰','💙','💚','🏦','🧧','💳','🐱','🐶'];
-    let cats = {
-      expense: [
-        { emoji: '🍜', name: '餐饮' },
-        { emoji: '🚇', name: '交通' },
-        { emoji: '🏠', name: '居家' },
-        { emoji: '🎮', name: '娱乐' },
-        { emoji: '🛍', name: '购物' },
-        { emoji: '💊', name: '医疗' }
-      ],
-      income: [
-        { emoji: '💰', name: '工资' },
-        { emoji: '🧰', name: '劳务' },
-        { emoji: '✨', name: '外快' },
-        { emoji: '📈', name: '理财' }
-      ]
-    };
+    let cats = { expense: [], income: [] };   // { expense:[{id,scope,name,icon}], income:[...] }
     let curTab = 'expense';
-    let editing = -1, delIndex = -1, emojiSel = '🍜';
+    let editingId = null, delId = null, emojiSel = '🍜';
 
-    /* 清掉旧版演示残留的 localStorage 键，让「05 记一笔」等页面也回到初始默认数据 */
-    try { localStorage.removeItem('fgj_demo_cats'); } catch (e) { /* 忽略 */ }
+    async function load() {
+      try {
+        const r = await fetch('/api/categories');
+        if (r.status === 401) { location.replace('02_login.html'); return; }
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.message || '加载失败');
+        const all = data.categories || [];
+        cats = { expense: [], income: [] };
+        all.forEach(function (c) { cats[c.scope].push(c); });
+      } catch (e) {
+        cats = { expense: [], income: [] };
+      }
+      render();
+    }
 
     function esc(s) {
       return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -210,17 +206,17 @@
       list.classList.remove('hidden');
       empty.classList.add('hidden');
       empty.classList.remove('flex');
-      arr.forEach(function (c, i) {
+      arr.forEach(function (c) {
         const row = document.createElement('div');
         row.className = 'bg-surface-container-lowest rounded-2xl p-space-md flex items-center gap-space-sm shadow-[0_2px_12px_rgba(155,63,90,0.05)]';
         row.innerHTML =
-          '<div class="w-12 h-12 rounded-full bg-primary-fixed/60 flex items-center justify-center text-2xl shrink-0">' + c.emoji + '</div>' +
+          '<div class="w-12 h-12 rounded-full bg-primary-fixed/60 flex items-center justify-center text-2xl shrink-0">' + esc(c.icon) + '</div>' +
           '<div class="flex flex-col min-w-0 flex-1">' +
             '<span class="text-label-lg text-on-surface font-bold">' + esc(c.name) + '</span>' +
             '<span class="text-body-sm text-outline">' + (curTab === 'expense' ? '支出分类' : '收入分类') + '</span>' +
           '</div>' +
-          '<button aria-label="编辑" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-primary-fixed active:scale-95 transition-all shrink-0" onclick="openEdit(' + i + ')" type="button"><span class="material-symbols-outlined text-[18px]">edit</span></button>' +
-          '<button aria-label="删除" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-error hover:bg-error-container/40 active:scale-95 transition-all shrink-0" onclick="askDelete(' + i + ')" type="button"><span class="material-symbols-outlined text-[18px]">delete</span></button>';
+          '<button aria-label="编辑" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-primary-fixed active:scale-95 transition-all shrink-0" onclick="openEdit(' + c.id + ')" type="button"><span class="material-symbols-outlined text-[18px]">edit</span></button>' +
+          '<button aria-label="删除" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-error hover:bg-error-container/40 active:scale-95 transition-all shrink-0" onclick="askDelete(' + c.id + ')" type="button"><span class="material-symbols-outlined text-[18px]">delete</span></button>';
         list.appendChild(row);
       });
     }
@@ -244,7 +240,7 @@
     }
 
     function openAdd() {
-      editing = -1;
+      editingId = null;
       emojiSel = EMOJIS[0];
       document.getElementById('cat-modal-title').textContent = '添加' + (curTab === 'expense' ? '支出' : '收入') + '分类';
       document.getElementById('cat-name').value = '';
@@ -254,13 +250,14 @@
       setTimeout(function () { document.getElementById('cat-name').focus(); }, 50);
     }
 
-    function openEdit(i) {
-      editing = i;
-      const c = cats[curTab][i];
-      emojiSel = c.emoji;
+    function openEdit(id) {
+      editingId = id;
+      const c = cats[curTab].find(function (x) { return x.id === id; });
+      if (!c) return;
+      emojiSel = c.icon;
       document.getElementById('cat-modal-title').textContent = '编辑分类';
       document.getElementById('cat-name').value = c.name;
-      document.getElementById('cat-emoji-preview').textContent = c.emoji;
+      document.getElementById('cat-emoji-preview').textContent = c.icon;
       renderEmojiGrid();
       document.getElementById('cat-modal').style.display = 'flex';
     }
@@ -269,22 +266,28 @@
       document.getElementById('cat-modal').style.display = 'none';
     }
 
-    function saveCat() {
+    async function saveCat() {
       const nameEl = document.getElementById('cat-name');
       const name = (nameEl.value || '').trim();
       if (!name) { nameEl.focus(); return; }
-      if (editing > -1) {
-        cats[curTab][editing] = { emoji: emojiSel, name: name };
-      } else {
-        cats[curTab].push({ emoji: emojiSel, name: name });
-      }
-      render();
-      closeCat();
+      const isEdit = editingId != null;
+      try {
+        const r = await fetch(isEdit ? '/api/categories/' + editingId : '/api/categories', {
+          method: isEdit ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scope: curTab, name: name, icon: emojiSel })
+        });
+        const data = await r.json();
+        if (!r.ok) { alert(data.message || '保存失败'); return; }
+        closeCat();
+        await load();
+      } catch (e) { alert('网络异常，请稍后再试'); }
     }
 
-    function askDelete(i) {
-      delIndex = i;
-      document.getElementById('del-text').textContent = '确定删除「' + cats[curTab][i].name + '」吗？';
+    function askDelete(id) {
+      delId = id;
+      const c = cats[curTab].find(function (x) { return x.id === id; });
+      document.getElementById('del-text').textContent = '确定删除「' + (c ? c.name : '') + '」吗？';
       document.getElementById('del-modal').style.display = 'flex';
     }
 
@@ -292,14 +295,18 @@
       document.getElementById('del-modal').style.display = 'none';
     }
 
-    function confirmDel() {
-      if (delIndex > -1) cats[curTab].splice(delIndex, 1);
-      delIndex = -1;
-      render();
-      closeDel();
+    async function confirmDel() {
+      if (delId == null) return;
+      try {
+        const r = await fetch('/api/categories/' + delId, { method: 'DELETE' });
+        const data = await r.json();
+        if (!r.ok) { alert(data.message || '删除失败'); return; }
+        closeDel();
+        await load();
+      } catch (e) { alert('网络异常，请稍后再试'); }
     }
 
-    switchTab('expense');
+    load();
   </script>
 </div></main>
 <!-- proto-nav -->

@@ -11,6 +11,7 @@ export async function requireAuth(req, res, next) {
       req.userName = session.username;
       req.userRegisteredOn = session.registered_on; // 注册日期（YYYY-MM-DD 字符串，10 我的页展示）
       req.userJoinedDays = session.joined_days;     // 已加入天数（注册当天 = 1，SQL 时钟计算）
+      req.userAvatarUrl = session.avatar_url;       // 头像地址（10 我的页展示）
       await renewSession(session.token_hash);
       setSessionCookie(res, token); // Cookie 寿命一并滑动，避免「库内有效、Cookie 先过期」
       return next();

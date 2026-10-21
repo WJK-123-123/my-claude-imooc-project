@@ -4,12 +4,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import config from './config.js';
 import authRoutes from './routes/auth.js';
+import accountRoutes from './routes/account.js';
+import categoryRoutes from './routes/category.js';
+import profileRoutes from './routes/profile.js';
+import billsRoutes from './routes/bills.js';
 import { getSessionUser, SESSION_COOKIE } from './utils/session.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // 头像 base64 上传较大，放宽请求体上限
 app.use(cookieParser());
 
 // ---- 访问日志（方法 路径 状态码，便于人工过主流程时核对请求是否到达后端） ----
@@ -20,6 +24,10 @@ app.use((req, res, next) => {
 
 // ---- API ----
 app.use('/api/auth', authRoutes);
+app.use('/api/accounts', accountRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/bills', billsRoutes);
 app.use('/api', (req, res) => res.status(404).json({ message: '接口不存在' }));
 
 // ---- 页面登录守卫（PRD §8：未登录时除登录/注册/找回密码外全部重定向登录页） ----
