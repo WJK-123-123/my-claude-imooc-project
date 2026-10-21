@@ -93,7 +93,7 @@
     }
   }
 </script><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Quicksand:wght@600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script><style>
     body {
       min-height: max(884px, 100dvh);
     }
@@ -102,74 +102,79 @@
       to { opacity: 1; transform: scale(1); }
     }
     .animate-fade-in { animation: proto-fade-in 0.18s ease-out; }
+    /* 环形图：入场弹入 + 扇区高亮过渡（单次动效 ≤ 300ms，PRD 6.5） */
+    .pie-svg { animation: pie-pop 0.28s ease-out both; transform-origin: center; }
+    @keyframes pie-pop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+    .pie-slice { transform-box: fill-box; transform-origin: center; transition: opacity 0.18s ease, transform 0.18s ease; }
+    .pie-slice.is-dim { opacity: 0.22; }
+    /* 折线图：入场弹入 + 折线描画 + 面积渐显（单次动效 ≤ 300ms，PRD 6.5） */
+    .trend-svg { animation: pie-pop 0.28s ease-out both; transform-origin: center; }
+    .trend-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trend-draw 0.3s ease-out 0.05s forwards; }
+    @keyframes trend-draw { to { stroke-dashoffset: 0; } }
+    .trend-area { animation: trend-fade 0.28s ease-out 0.15s both; }
+    @keyframes trend-fade { from { opacity: 0; } to { opacity: 1; } }
+    .trend-dot { transform-box: fill-box; transform-origin: center; transition: transform 0.15s ease; }
     .material-symbols-outlined { user-select: none; }
+    /* 图标字体（Material Symbols 连字）就绪前先隐藏，避免刷新时闪现英文图标名；JS 禁用时不加类、不受影响 */
+    html.icons-loading .material-symbols-outlined {
+      visibility: hidden;
+    }
   </style>
-  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="财务管家 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"><span class="text-headline-md font-headline-md text-on-surface">统计</span></div><button aria-label="个人中心" type="button" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform cursor-pointer" onclick="location.href='10_profile.html'"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></button></div></header><main class="flex flex-col relative w-full px-gutter pt-16 pb-24 bg-[#FFF4F7] flex-1"><div class="flex flex-col w-full pb-8 space-y-space-md">
-<!-- Date Switcher（全页唯一日期控件：< > 按天步进，点药丸弹日历；顶栏「统计」不再被改写） -->
-<div class="flex items-center justify-between py-space-sm">
-<button aria-label="前一天" class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all shadow-sm active:scale-95" onclick="stepDay(-1)" type="button">
-<span class="material-symbols-outlined">chevron_left</span>
-</button>
-<button class="flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-surface-container-low shadow-sm hover:bg-primary-fixed/60 hover:shadow-md transition-all active:scale-95 cursor-pointer" id="date-pill" onclick="openCalendar()" type="button">
-<span class="material-symbols-outlined text-primary text-[18px]">calendar_month</span>
-<span class="font-headline-md text-on-surface text-headline-md" id="date-label">2026年10月18日</span>
-<span class="material-symbols-outlined text-outline text-[16px]">expand_more</span>
-</button>
-<button aria-label="后一天" class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all shadow-sm active:scale-95" onclick="stepDay(1)" type="button">
-<span class="material-symbols-outlined">chevron_right</span>
-</button>
-</div>
-<!-- Monthly Overview Card（三指标齐平三等分） -->
-<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-[0_4px_24px_rgba(155,63,90,0.06)] flex flex-col gap-space-md">
-<div class="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-primary-fixed/45 pointer-events-none blur-2xl"></div>
-<div class="grid grid-cols-3 gap-4 relative">
-<div class="flex flex-col items-center text-center gap-1.5">
-<div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant">
-<span class="w-2 h-2 rounded-full bg-primary"></span> 本月结余
-</div>
-<span class="text-body-lg font-headline-md font-bold text-primary tracking-wide">¥ 3,842.50</span>
-</div>
-<div class="flex flex-col items-center text-center gap-1.5">
-<div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant">
-<span class="w-2 h-2 rounded-full bg-tertiary"></span> 本月支出
-</div>
-<span class="text-body-lg font-headline-md font-bold text-on-surface tracking-wide">¥ 5,210.00</span>
-</div>
-<div class="flex flex-col items-center text-center gap-1.5">
-<div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant">
-<span class="w-2 h-2 rounded-full bg-secondary"></span> 本月收入
-</div>
-<span class="text-body-lg font-headline-md font-bold text-on-surface tracking-wide">¥ 9,052.50</span>
-</div>
-</div>
-<div class="flex justify-center pt-space-xs border-t border-surface-container-low relative">
-<div class="px-space-md py-space-xs rounded-full bg-secondary-fixed/30 text-on-secondary-fixed-variant text-label-md flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px]">trending_up</span> 结余率 42%
-</div>
-</div>
-</div>
-<!-- Quick Statistics Snapshot -->
+  <script>document.documentElement.classList.add('icons-loading');</script>
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="财务管家 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"><span class="text-headline-md font-headline-md text-on-surface">统计</span><button id="year-pill" type="button" onclick="openYearPicker()" class="flex items-center gap-1 px-space-sm py-1 rounded-full bg-primary-fixed/60 text-on-primary-container text-label-md hover:bg-primary-fixed transition-all active:scale-95"><span id="year-label">2026年</span><span class="material-symbols-outlined text-[16px]">expand_more</span></button></div><button aria-label="个人中心" type="button" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform cursor-pointer" onclick="location.href='10_profile.html'"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></button></div></header><main class="flex flex-col relative w-full px-gutter pt-16 pb-24 bg-[#FFF4F7] flex-1"><div class="flex flex-col w-full pb-8 space-y-space-md">
+<!-- 年度快捷统计（记账笔数 / 月均支出 / 最大单笔，按所选年份） -->
 <div class="grid grid-cols-3 gap-space-sm">
 <div class="rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col items-center text-center">
 <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary mb-space-xs">
 <span class="material-symbols-outlined text-[20px]">receipt</span>
 </div>
 <span class="text-body-sm text-on-surface-variant">记账笔数</span>
-<span class="text-label-lg text-on-surface font-bold mt-0.5">48 笔</span>
+<span class="text-label-lg text-on-surface font-bold mt-0.5" id="stat-count">0 笔</span>
 </div>
 <div class="rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col items-center text-center">
 <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary mb-space-xs">
 <span class="material-symbols-outlined text-[20px]">monitoring</span>
 </div>
-<span class="text-body-sm text-on-surface-variant">日均支出</span>
-<span class="text-label-lg text-on-surface font-bold mt-0.5">¥168.1</span>
+<span class="text-body-sm text-on-surface-variant">月均支出</span>
+<span class="text-label-lg text-on-surface font-bold mt-0.5" id="stat-monthly">¥ 0.00</span>
 </div>
 <div class="rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col items-center text-center">
 <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary mb-space-xs">
 <span class="material-symbols-outlined text-[20px]">local_mall</span>
 </div>
 <span class="text-body-sm text-on-surface-variant">最大单笔</span>
-<span class="text-label-lg text-on-surface font-bold mt-0.5">¥1,280</span>
+<span class="text-label-lg text-on-surface font-bold mt-0.5" id="stat-max">—</span>
+<span class="text-label-sm text-on-surface-variant mt-0.5" id="stat-max-cat">—</span>
+</div>
+</div>
+<!-- 分类占比 + 收支趋势：同一片区域各占一半（移动端上下堆叠，桌面左右并列） -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-md">
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col gap-space-lg">
+<div class="flex items-center justify-between">
+<span class="text-label-lg font-bold text-on-surface">分类占比</span>
+<span class="text-body-sm text-primary" id="chart-year">本年度</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<span class="text-label-md text-on-surface-variant">支出占比</span>
+<div class="flex items-center gap-space-lg">
+<div class="relative w-36 h-36 shrink-0" id="pie-expense"></div>
+<div class="flex-1 min-w-0 flex flex-col gap-space-xs" id="legend-expense"></div>
+</div>
+</div>
+<div class="flex flex-col gap-space-sm">
+<span class="text-label-md text-on-surface-variant">收入占比</span>
+<div class="flex items-center gap-space-lg">
+<div class="relative w-36 h-36 shrink-0" id="pie-income"></div>
+<div class="flex-1 min-w-0 flex flex-col gap-space-xs" id="legend-income"></div>
+</div>
+</div>
+</div>
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<span class="text-label-lg font-bold text-on-surface">收支趋势</span>
+<div class="flex items-center gap-space-sm" id="trend-legend"></div>
+</div>
+<div class="relative flex-1 w-full min-h-[220px] flex items-center justify-center" id="trend-chart"></div>
 </div>
 </div>
 <!-- Tabs for Expense / Income Ranking -->
@@ -177,195 +182,34 @@
 <button class="flex-1 py-2 rounded-lg bg-surface-container-lowest text-primary font-bold text-label-lg shadow-sm transition-all" id="tab-expense" onclick="switchTab('expense')">支出分类排行</button>
 <button class="flex-1 py-2 rounded-lg text-on-surface-variant font-bold text-label-lg transition-all" id="tab-income" onclick="switchTab('income')">收入分类排行</button>
 </div>
-<!-- Expense Ranking List -->
-<div class="flex flex-col gap-space-sm" id="list-expense">
-<!-- Category Item 1 -->
-<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col gap-space-xs">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-space-sm">
-<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
-<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">restaurant</span>
-</div>
-<div class="flex flex-col">
-<span class="text-label-lg text-on-surface">餐饮美食</span>
-<span class="text-body-sm text-on-surface-variant">18笔消费</span>
-</div>
-</div>
-<div class="flex flex-col items-end">
-<span class="text-label-lg text-on-surface font-bold">¥ 1,850.00</span>
-<span class="text-body-sm text-primary">35.5%</span>
-</div>
-</div>
-<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden mt-1">
-<div class="h-full bg-primary-container rounded-full" style="width: 35.5%;"></div>
-</div>
-</div>
-<!-- Category Item 2 -->
-<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col gap-space-xs">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-space-sm">
-<div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary">
-<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
-</div>
-<div class="flex flex-col">
-<span class="text-label-lg text-on-surface">服饰美容</span>
-<span class="text-body-sm text-on-surface-variant">5笔消费</span>
-</div>
-</div>
-<div class="flex flex-col items-end">
-<span class="text-label-lg text-on-surface font-bold">¥ 1,280.00</span>
-<span class="text-body-sm text-tertiary">24.6%</span>
-</div>
-</div>
-<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden mt-1">
-<div class="h-full bg-tertiary-container rounded-full" style="width: 24.6%;"></div>
-</div>
-</div>
-<!-- Category Item 3 -->
-<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col gap-space-xs">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-space-sm">
-<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">directions_subway</span>
-</div>
-<div class="flex flex-col">
-<span class="text-label-lg text-on-surface">交通出行</span>
-<span class="text-body-sm text-on-surface-variant">12笔消费</span>
-</div>
-</div>
-<div class="flex flex-col items-end">
-<span class="text-label-lg text-on-surface font-bold">¥ 950.00</span>
-<span class="text-body-sm text-on-surface-variant">18.2%</span>
-</div>
-</div>
-<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden mt-1">
-<div class="h-full bg-outline-variant rounded-full" style="width: 18.2%;"></div>
-</div>
-</div>
-<!-- Category Item 4 -->
-<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col gap-space-xs">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-space-sm">
-<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">home</span>
-</div>
-<div class="flex flex-col">
-<span class="text-label-lg text-on-surface">住房物业</span>
-<span class="text-body-sm text-on-surface-variant">2笔消费</span>
-</div>
-</div>
-<div class="flex flex-col items-end">
-<span class="text-label-lg text-on-surface font-bold">¥ 800.00</span>
-<span class="text-body-sm text-on-surface-variant">15.3%</span>
-</div>
-</div>
-<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden mt-1">
-<div class="h-full bg-outline-variant rounded-full" style="width: 15.3%;"></div>
-</div>
-</div>
-<!-- Category Item 5 -->
-<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col gap-space-xs">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-space-sm">
-<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">sports_esports</span>
-</div>
-<div class="flex flex-col">
-<span class="text-label-lg text-on-surface">休闲娱乐</span>
-<span class="text-body-sm text-on-surface-variant">3笔消费</span>
-</div>
-</div>
-<div class="flex flex-col items-end">
-<span class="text-label-lg text-on-surface font-bold">¥ 330.00</span>
-<span class="text-body-sm text-on-surface-variant">6.4%</span>
-</div>
-</div>
-<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden mt-1">
-<div class="h-full bg-outline-variant rounded-full" style="width: 6.4%;"></div>
-</div>
-</div>
-</div>
+<!-- Expense Ranking List（JS 动态渲染） -->
+<div class="flex flex-col gap-space-sm" id="list-expense"></div>
 <!-- Income Ranking List (Hidden by default) -->
-<div class="hidden flex-col gap-space-sm" id="list-income">
-<!-- Income Item 1 -->
-<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col gap-space-xs">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-space-sm">
-<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed">
-<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">payments</span>
+<div class="hidden flex-col gap-space-sm" id="list-income"></div>
+<!-- 空状态（所选年份无账单时展示） -->
+<div class="hidden flex-col items-center justify-center py-16 px-4 text-center" id="empty-state">
+<div class="w-32 h-32 mb-space-md bg-primary-fixed/30 rounded-full flex items-center justify-center relative overflow-hidden">
+<span class="material-symbols-outlined text-primary text-[64px]" style="font-variation-settings: 'FILL' 1;">cruelty_free</span>
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent"></div>
 </div>
-<div class="flex flex-col">
-<span class="text-label-lg text-on-surface">工资薪金</span>
-<span class="text-body-sm text-on-surface-variant">1笔收入</span>
+<h3 class="text-headline-md font-headline-md text-on-surface mb-space-xs">这一年还没有记账哦</h3>
+<p class="text-body-md text-on-surface-variant max-w-[240px] mb-space-lg">让每一笔小开销都变成生活可爱的小脚印吧～</p>
 </div>
-</div>
-<div class="flex flex-col items-end">
-<span class="text-label-lg text-on-surface font-bold">¥ 8,500.00</span>
-<span class="text-body-sm text-secondary font-bold">93.9%</span>
-</div>
-</div>
-<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden mt-1">
-<div class="h-full bg-secondary rounded-full" style="width: 93.9%;"></div>
-</div>
-</div>
-<!-- Income Item 2 -->
-<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col gap-space-xs">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-space-sm">
-<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">redeem</span>
-</div>
-<div class="flex flex-col">
-<span class="text-label-lg text-on-surface">其他收入</span>
-<span class="text-body-sm text-on-surface-variant">2笔收入</span>
-</div>
-</div>
-<div class="flex flex-col items-end">
-<span class="text-label-lg text-on-surface font-bold">¥ 552.50</span>
-<span class="text-body-sm text-on-surface-variant">6.1%</span>
-</div>
-</div>
-<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden mt-1">
-<div class="h-full bg-secondary-fixed-dim rounded-full" style="width: 6.1%;"></div>
-</div>
-</div>
-</div>
-<!-- Warm Note Card -->
-<div class="rounded-xl bg-surface-container-low p-space-md flex items-center gap-space-md mt-space-sm">
-<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary shrink-0">
-<span class="material-symbols-outlined text-[18px]">favorite</span>
-</div>
-<span class="text-body-sm text-on-surface-variant">本月餐饮支出比上月略有增加哦，要记得合理安排每一笔预算，好好照顾自己~</span>
-</div>
-<!-- Export Data Button（页面底端全宽操作） -->
+<!-- Export Data Button（页面底端全宽操作：整合为 Excel 下载） -->
 <button aria-label="导出数据" class="w-full h-12 rounded-full bg-primary-fixed/70 text-primary font-label-lg text-label-lg hover:bg-primary-fixed active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-space-xs" onclick="exportData()" type="button">
 <span class="material-symbols-outlined text-[18px]">download</span>
 <span>导出数据</span>
 </button>
-<!-- Calendar Popup（点日期药丸弹出，直接选年月日；样式与 11 页弹窗同款） -->
-<div class="fixed inset-0 z-[70] items-center justify-center p-gutter bg-inverse-surface/40 backdrop-blur-sm animate-fade-in" id="calendar-pop" onclick="if(event.target===this)closeCalendar()" style="display:none">
+<!-- Year Picker Popup（选择统计年份） -->
+<div class="fixed inset-0 z-[70] items-center justify-center p-gutter bg-inverse-surface/40 backdrop-blur-sm animate-fade-in" id="year-pop" onclick="if(event.target===this)closeYearPicker()" style="display:none">
 <div class="w-full max-w-xs bg-surface rounded-3xl p-space-md shadow-2xl flex flex-col">
 <div class="flex items-center justify-between mb-space-sm">
-<button aria-label="上一年" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(-1,'y')" type="button">
-<span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_left</span>
-</button>
-<button aria-label="上一月" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(-1,'m')" type="button">
-<span class="material-symbols-outlined text-[18px]">chevron_left</span>
-</button>
-<span class="font-headline-md text-headline-md text-on-surface" id="cal-title">2026年10月</span>
-<button aria-label="下一月" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(1,'m')" type="button">
-<span class="material-symbols-outlined text-[18px]">chevron_right</span>
-</button>
-<button aria-label="下一年" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="calStep(1,'y')" type="button">
-<span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_right</span>
+<span class="font-headline-md text-headline-md text-on-surface">选择年份</span>
+<button aria-label="关闭" class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="closeYearPicker()" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
 </button>
 </div>
-<div class="grid grid-cols-7 text-center text-label-sm text-outline mb-space-xs" id="cal-week"></div>
-<div class="grid grid-cols-7 gap-y-space-xs place-items-center" id="cal-grid"></div>
-<div class="flex items-center justify-between pt-space-sm mt-space-sm border-t border-surface-container-low">
-<button class="px-space-md py-1.5 rounded-full bg-primary-fixed/60 text-primary font-label-md text-label-md hover:bg-primary-fixed transition-all active:scale-95" onclick="gotoToday()" type="button">回到今天</button>
-<button class="px-space-md py-1.5 rounded-full text-outline font-label-md text-label-md hover:bg-surface-container transition-all active:scale-95" onclick="closeCalendar()" type="button">关闭</button>
-</div>
+<div class="grid grid-cols-1 gap-space-sm max-h-72 overflow-y-auto py-space-xs" id="year-grid"></div>
 </div>
 </div>
 <!-- Export Success Toast -->
@@ -376,152 +220,570 @@
 </div>
 </div>
 <script>
+    /* 07 统计页：按「年」聚合的收支统计。
+       数据来自 /api/stats?year=YYYY：记账笔数 / 月均支出 / 最大单笔 + 支出/收入分类排行 + 环形占比图。
+       金额在 JS 内以「分」整数运算后格式化展示，全程无浮点（PRD 金额硬约定）。 */
+
+    const THIS_YEAR = new Date().getFullYear();   // 年份选择器上界：固定当前自然年，不随所选年份变化
+    let curYear = THIS_YEAR;
+    let stats = null;   // 最近一次 /api/stats 返回的原始数据
+    const PAGE_SIZE = 8;   // 排行列表每页条数（卡片约 88px 高，8 条约一屏，桌面/手机端均宜）
+    let activeTab = 'expense';            // 当前选中的排行标签，决定滚动加载哪个列表
+    const shown = { expense: 0, income: 0 }; // 两列表已渲染条数
+    let sentinelObserver = null;          // 「加载下一页」的可见性观察器
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    // 分 → 元字符串（纯整数运算：千分位逗号 + 两位小数）
+    function centsToYuan(c) {
+      c = Math.max(0, Math.floor(c || 0));
+      const yuan = Math.floor(c / 100);
+      const fen = c % 100;
+      return String(yuan).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + String(fen).padStart(2, '0');
+    }
+    // 环形图分类配色（高饱和鲜艳色，固定顺序分配、不循环；已通过 CVD/明度/对比度校验）
+    const CHART_COLORS = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6', '#e34948'];
+    const MAX_SLICES = 8; // 环形图最多 8 个扇区，超出部分折叠为「其他」，避免颜色循环导致同色歧义
+
+    // 金额占比文案：不足 0.05% 显示 <0.1%，其余保留一位小数
+    function pctLabel(ratio) {
+      const pct = ratio * 100;
+      if (pct > 0 && pct < 0.05) return '<0.1%';
+      return pct.toFixed(1) + '%';
+    }
+    // 分 → 紧凑元字符串（整数运算；≥1 万用「x.x万」，其余千分位整数），用于环心总额展示
+    function yuanCompact(c) {
+      const yuan = Math.floor(Math.max(0, c || 0) / 100);
+      if (yuan >= 10000) {
+        const wan = Math.floor(yuan / 10000);
+        const qian = Math.floor((yuan % 10000) / 1000);
+        return wan + '.' + qian + '万';
+      }
+      return yuan.toLocaleString('en-US');
+    }
+    // 组装环形图扇区：按金额降序（后端已排序），超过 MAX_SLICES 的尾部折叠为「其他」
+    function buildSlices(type) {
+      const cats = type === 'expense' ? (stats?.expenseCategories || []) : (stats?.incomeCategories || []);
+      if (cats.length <= MAX_SLICES) {
+        return cats.map((c) => ({ name: c.name, icon: c.icon, amount: c.amount, count: c.count }));
+      }
+      const top = cats.slice(0, MAX_SLICES - 1);
+      const rest = cats.slice(MAX_SLICES - 1);
+      const folded = {
+        name: '其他', icon: '📦',
+        amount: rest.reduce((s, c) => s + (c.amount || 0), 0),
+        count: rest.reduce((s, c) => s + (c.count || 0), 0),
+      };
+      return [...top, folded];
+    }
+
     function switchTab(type) {
       const expBtn = document.getElementById('tab-expense');
       const incBtn = document.getElementById('tab-income');
       const expList = document.getElementById('list-expense');
       const incList = document.getElementById('list-income');
-
+      activeTab = type;
       if (type === 'expense') {
-        expBtn.className = "flex-1 py-2 rounded-lg bg-surface-container-lowest text-primary font-bold text-label-lg shadow-sm transition-all";
-        incBtn.className = "flex-1 py-2 rounded-lg text-on-surface-variant font-bold text-label-lg transition-all";
-        expList.classList.remove('hidden');
-        expList.classList.add('flex');
-        incList.classList.remove('flex');
-        incList.classList.add('hidden');
+        expBtn.className = 'flex-1 py-2 rounded-lg bg-surface-container-lowest text-primary font-bold text-label-lg shadow-sm transition-all';
+        incBtn.className = 'flex-1 py-2 rounded-lg text-on-surface-variant font-bold text-label-lg transition-all';
+        expList.classList.remove('hidden'); expList.classList.add('flex');
+        incList.classList.remove('flex'); incList.classList.add('hidden');
       } else {
-        incBtn.className = "flex-1 py-2 rounded-lg bg-surface-container-lowest text-primary font-bold text-label-lg shadow-sm transition-all";
-        expBtn.className = "flex-1 py-2 rounded-lg text-on-surface-variant font-bold text-label-lg transition-all";
-        incList.classList.remove('hidden');
-        incList.classList.add('flex');
-        expList.classList.remove('flex');
-        expList.classList.add('hidden');
+        incBtn.className = 'flex-1 py-2 rounded-lg bg-surface-container-lowest text-primary font-bold text-label-lg shadow-sm transition-all';
+        expBtn.className = 'flex-1 py-2 rounded-lg text-on-surface-variant font-bold text-label-lg transition-all';
+        incList.classList.remove('hidden'); incList.classList.add('flex');
+        expList.classList.remove('flex'); expList.classList.add('hidden');
+      }
+      observeSentinel(type);
+    }
+
+    async function loadStats(year) {
+      try {
+        const r = await fetch('/api/stats?year=' + year);
+        if (r.status === 401) { location.replace('02_login.html'); return; }
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.message || '加载失败');
+        stats = data;
+        curYear = data.year;
+      } catch (e) {
+        stats = null;   // 网络异常静默回落为空状态，避免白屏
+        curYear = year;
+      }
+      renderAll();
+    }
+
+    function renderAll() {
+      document.getElementById('year-label').textContent = curYear + '年';
+      document.getElementById('chart-year').textContent = curYear + '年';
+      renderOverview();
+      renderPie('expense');
+      renderPie('income');
+      renderLineChart();
+      renderList('expense');
+      renderList('income');
+      renderEmpty();
+      observeSentinel(activeTab);
+    }
+
+    function renderOverview() {
+      const s = stats || {};
+      document.getElementById('stat-count').textContent = (s.totalCount || 0) + ' 笔';
+      document.getElementById('stat-monthly').textContent = '¥ ' + centsToYuan(s.monthlyAvgExpense || 0);
+      if (s.maxExpense && s.maxExpense.amount > 0) {
+        document.getElementById('stat-max').textContent = '¥ ' + centsToYuan(s.maxExpense.amount);
+        document.getElementById('stat-max-cat').textContent = s.maxExpense.categoryName || '';
+      } else {
+        document.getElementById('stat-max').textContent = '—';
+        document.getElementById('stat-max-cat').textContent = '';
       }
     }
 
-    /* —— 日期控件：< > 按天步进，跨月/跨年自动进位；点药丸弹日历直选 —— */
-    const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
-    const today = () => { const t = new Date(); return { y: t.getFullYear(), m: t.getMonth() + 1, d: t.getDate() }; };
-    const daysInMonth = (y, m) => new Date(y, m, 0).getDate();   // m 取 1~12，闰年由 Date 自行处理
-    const fmtDate = c => c.y + '年' + c.m + '月' + c.d + '日';
+    // 环形图：扇区白色描边分隔 + 环心总额 + 右侧图例（色点/图标/名称/金额/占比）。
+    // 悬停或点按扇区/图例高亮该分类：其余扇区变淡、被选扇区外扩、环心切换为分类详情。
+    const pieGeo = { expense: [], income: [] };     // 各扇区 { start, sweep, mid }（度）
+    const pieHover = { expense: -1, income: -1 };   // 当前高亮扇区下标，-1 表示无
 
-    let cur = today();                    // 当前选中日期
-    let viewY = cur.y, viewM = cur.m;     // 日历弹窗正在展示的年月
-
-    function renderDate() {
-      document.getElementById('date-label').textContent = fmtDate(cur);
-    }
-
-    function stepDay(n) {
-      cur.d += n;
-      if (cur.d > daysInMonth(cur.y, cur.m)) {   // 超出本月天数 → 月份+1，12 月再跨年
-        cur.d = 1; cur.m++;
-        if (cur.m > 12) { cur.m = 1; cur.y++; }
-      } else if (cur.d < 1) {                    // 低于 1 日 → 月份-1，落到上月最后一天
-        cur.m--;
-        if (cur.m < 1) { cur.m = 12; cur.y--; }
-        cur.d = daysInMonth(cur.y, cur.m);
+    function renderPie(type) {
+      const el = document.getElementById('pie-' + type);
+      const legendEl = document.getElementById('legend-' + type);
+      const slices = buildSlices(type);
+      const total = slices.reduce((sum, c) => sum + (c.amount || 0), 0);
+      const size = 144, cx = size / 2, cy = size / 2, rOuter = 62, rInner = 42;
+      legendEl.innerHTML = '';
+      pieHover[type] = -1;
+      if (!slices.length || total <= 0) {
+        el.innerHTML = '<svg viewBox="0 0 ' + size + ' ' + size + '" class="w-full h-full">' +
+          '<circle cx="' + cx + '" cy="' + cy + '" r="' + rInner + '" fill="#f6ebee"></circle>' +
+          '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#877275" font-size="11">暂无数据</text></svg>';
+        return;
       }
-      renderDate();
+
+      // 极坐标（12 点方向为 0°，顺时针）；返回该半径上的坐标点
+      const ringPt = (r, deg) => {
+        const rad = (deg - 90) * Math.PI / 180;
+        return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+      };
+      let start = 0;
+      const geo = [];
+      const paths = [];
+      const labels = [];
+      slices.forEach((cat, i) => {
+        const sweep = cat.amount / total * 360;
+        const end = start + sweep;
+        const mid = start + sweep / 2;
+        geo.push({ start: start, sweep: sweep, mid: mid });
+        if (slices.length === 1) {
+          // 单分类占满整圆：画整圈环（扇形弧会退化为空）
+          paths.push('<circle class="pie-slice" data-i="0" cx="' + cx + '" cy="' + cy + '" r="' + ((rOuter + rInner) / 2) + '" fill="none" stroke="' + CHART_COLORS[0] + '" stroke-width="' + (rOuter - rInner) + '"></circle>');
+        } else {
+          const large = sweep > 180 ? 1 : 0;
+          const a = ringPt(rOuter, start), b = ringPt(rOuter, end);
+          const c = ringPt(rInner, end), d = ringPt(rInner, start);
+          const pathD = 'M ' + a.x.toFixed(2) + ' ' + a.y.toFixed(2) +
+            ' A ' + rOuter + ' ' + rOuter + ' 0 ' + large + ' 1 ' + b.x.toFixed(2) + ' ' + b.y.toFixed(2) +
+            ' L ' + c.x.toFixed(2) + ' ' + c.y.toFixed(2) +
+            ' A ' + rInner + ' ' + rInner + ' 0 ' + large + ' 0 ' + d.x.toFixed(2) + ' ' + d.y.toFixed(2) + ' Z';
+          paths.push('<path class="pie-slice" data-i="' + i + '" d="' + pathD + '" fill="' + CHART_COLORS[i] + '" stroke="#ffffff" stroke-width="2"></path>');
+        }
+        // 大扇区在环上直接标注百分比
+        if (slices.length > 1 && sweep >= 24) {
+          const lp = ringPt((rOuter + rInner) / 2, mid);
+          labels.push('<text x="' + lp.x.toFixed(1) + '" y="' + lp.y.toFixed(1) + '" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="700" pointer-events="none">' + pctLabel(cat.amount / total) + '</text>');
+        }
+        start = end;
+      });
+      pieGeo[type] = geo;
+
+      const hole = '<circle cx="' + cx + '" cy="' + cy + '" r="' + rInner + '" fill="#ffffff"></circle>';
+      const center =
+        '<g id="pie-center-' + type + '">' +
+          '<text x="' + cx + '" y="' + cy + '" dominant-baseline="middle" text-anchor="middle" fill="#877275" font-size="10">' + (type === 'expense' ? '总支出' : '总收入') + '</text>' +
+        '</g>';
+
+      el.innerHTML = '<svg viewBox="0 0 ' + size + ' ' + size + '" class="pie-svg w-full h-full" style="filter:drop-shadow(0 4px 12px rgba(255,143,171,0.16))">' +
+        paths.join('') + hole + center + labels.join('') + '</svg>';
+
+      // 扇区事件：悬停高亮，点按切换（兼顾移动端无 hover）
+      el.querySelectorAll('.pie-slice').forEach((p) => {
+        p.addEventListener('mouseenter', () => highlightSlice(type, Number(p.dataset.i)));
+        p.addEventListener('mouseleave', () => clearSlice(type));
+        p.addEventListener('click', () => {
+          const i = Number(p.dataset.i);
+          pieHover[type] === i ? clearSlice(type) : highlightSlice(type, i);
+        });
+      });
+
+      // 图例：色点 + 图标/名称 + 笔数·金额 + 百分比；悬停/点按联动高亮
+      slices.forEach((cat, i) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-space-xs cursor-pointer rounded-lg px-1.5 py-1 -mx-1.5 hover:bg-surface-container-low transition-colors';
+        row.innerHTML =
+          '<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:' + CHART_COLORS[i] + '"></span>' +
+          '<div class="flex-1 min-w-0 flex flex-col">' +
+            '<span class="text-body-sm text-on-surface truncate">' + esc(cat.icon || '📝') + ' ' + esc(cat.name) + '</span>' +
+            '<span class="text-label-sm text-on-surface-variant tabular-nums">' + (cat.count || 0) + '笔 · ¥ ' + centsToYuan(cat.amount) + '</span>' +
+          '</div>' +
+          '<span class="text-body-sm text-primary font-semibold tabular-nums shrink-0">' + pctLabel(cat.amount / total) + '</span>';
+        row.addEventListener('mouseenter', () => highlightSlice(type, i));
+        row.addEventListener('mouseleave', () => clearSlice(type));
+        row.addEventListener('click', () => { pieHover[type] === i ? clearSlice(type) : highlightSlice(type, i); });
+        legendEl.appendChild(row);
+      });
     }
 
-    function openCalendar() {
-      viewY = cur.y; viewM = cur.m;
-      renderCal();
-      document.getElementById('calendar-pop').style.display = 'flex';
+    // 高亮某分类：其余扇区变淡、被选扇区沿中角方向外扩、环心切换为分类详情
+    function highlightSlice(type, i) {
+      const el = document.getElementById('pie-' + type);
+      const geo = pieGeo[type];
+      const slices = buildSlices(type);
+      const total = slices.reduce((s, c) => s + (c.amount || 0), 0);
+      if (!geo[i] || !slices[i]) return;
+      pieHover[type] = i;
+      const cx = 72, cy = 72;
+      el.querySelectorAll('.pie-slice').forEach((p, idx) => {
+        if (idx === i) {
+          const rad = (geo[i].mid - 90) * Math.PI / 180;
+          p.style.transform = 'translate(' + (5 * Math.cos(rad)).toFixed(2) + 'px,' + (5 * Math.sin(rad)).toFixed(2) + 'px)';
+          p.classList.remove('is-dim');
+        } else {
+          p.style.transform = '';
+          p.classList.add('is-dim');
+        }
+      });
+      const cat = slices[i];
+      const name = String(cat.name || '');
+      const shortName = name.length > 6 ? name.slice(0, 6) + '…' : name;
+      document.getElementById('pie-center-' + type).innerHTML =
+        '<text x="' + cx + '" y="' + (cy - 14) + '" dominant-baseline="middle" text-anchor="middle" font-size="18">' + esc(cat.icon || '📝') + '</text>' +
+        '<text x="' + cx + '" y="' + (cy + 4) + '" dominant-baseline="middle" text-anchor="middle" fill="#1f1a1d" font-size="13" font-weight="700">' + pctLabel(cat.amount / total) + '</text>' +
+        '<text x="' + cx + '" y="' + (cy + 18) + '" dominant-baseline="middle" text-anchor="middle" fill="#877275" font-size="9">' + esc(shortName) + '</text>';
     }
 
-    function closeCalendar() {
-      document.getElementById('calendar-pop').style.display = 'none';
+    function clearSlice(type) {
+      const el = document.getElementById('pie-' + type);
+      pieHover[type] = -1;
+      el.querySelectorAll('.pie-slice').forEach((p) => { p.style.transform = ''; p.classList.remove('is-dim'); });
+      const cx = 72, cy = 72;
+      document.getElementById('pie-center-' + type).innerHTML =
+        '<text x="' + cx + '" y="' + cy + '" dominant-baseline="middle" text-anchor="middle" fill="#877275" font-size="10">' + (type === 'expense' ? '总支出' : '总收入') + '</text>';
     }
 
-    function calStep(n, unit) {   // 日历标题翻页：月进位同样跨年
-      if (unit === 'y') { viewY += n; }
-      else {
-        viewM += n;
-        if (viewM > 12) { viewM = 1; viewY++; }
-        if (viewM < 1) { viewM = 12; viewY--; }
+    // 收支趋势：12 个月折线图（支出/收入两条线，平滑曲线 + 渐变面积 + 悬停引导线/提示框 + 图例显隐）
+    const TREND_EXPENSE_COLOR = '#eb6834'; // 支出 · 橙
+    const TREND_INCOME_COLOR = '#2a78d6';  // 收入 · 蓝
+    const trendVisible = { expense: true, income: true }; // 图例点击显隐各折线
+
+    // 折线图纵轴量程取整（向上取到 1/2/5 × 10^n 的「漂亮」上界，单位为分）
+    function niceCeil(v) {
+      if (v <= 0) return 10000; // 空数据时给 ¥100 的默认量程
+      const exp = Math.floor(Math.log10(v));
+      const base = Math.pow(10, exp);
+      const f = v / base;
+      let nice = 10;
+      if (f <= 1) nice = 1; else if (f <= 2) nice = 2; else if (f <= 5) nice = 5;
+      return nice * base;
+    }
+
+    // Catmull-Rom → 三次贝塞尔平滑路径（张力 0.16），pts 为 [{x,y}]，返回 path d 字符串
+    function smoothD(pts) {
+      if (!pts.length) return '';
+      let d = 'M ' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1);
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i - 1] || pts[i];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[i + 2] || p2;
+        const t = 0.16;
+        const c1x = p1.x + (p2.x - p0.x) * t, c1y = p1.y + (p2.y - p0.y) * t;
+        const c2x = p2.x - (p3.x - p1.x) * t, c2y = p2.y - (p3.y - p1.y) * t;
+        d += ' C ' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) + ' ' + c2x.toFixed(1) + ' ' + c2y.toFixed(1) + ' ' + p2.x.toFixed(1) + ' ' + p2.y.toFixed(1);
       }
-      renderCal();
+      return d;
     }
 
-    function renderCal() {
-      document.getElementById('cal-title').textContent = viewY + '年' + viewM + '月';
-      document.getElementById('cal-week').innerHTML = WEEK.map(w => '<span>' + w + '</span>').join('');
-      const grid = document.getElementById('cal-grid');
+    function renderLineChart() {
+      const box = document.getElementById('trend-chart');
+      const legendEl = document.getElementById('trend-legend');
+      const monthly = stats?.monthly || [];
+
+      // 图例：点击可显示/隐藏对应折线
+      const legend = (key, color, label) =>
+        '<span class="flex items-center gap-space-xs text-body-sm text-on-surface-variant cursor-pointer select-none transition-opacity" data-trend-toggle="' + key + '" style="opacity:' + (trendVisible[key] ? '1' : '0.4') + '">' +
+          '<span class="w-2.5 h-2.5 rounded-full" style="background:' + color + '"></span>' + label + '</span>';
+      legendEl.innerHTML = legend('expense', TREND_EXPENSE_COLOR, '支出') + legend('income', TREND_INCOME_COLOR, '收入');
+
+      const hasData = monthly.some((m) => (m.expense || 0) > 0 || (m.income || 0) > 0);
+      const W = 360, H = 230, ml = 46, mr = 14, mt = 14, mb = 28;
+      const plotW = W - ml - mr, plotH = H - mt - mb;
+      const x0 = ml, x1 = W - mr, y0 = mt, y1 = H - mb;
+
+      let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="trend-svg w-full max-w-[440px] h-auto mx-auto block">';
+      if (!hasData) {
+        svg += '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#877275" font-size="13">暂无数据</text></svg>';
+        box.innerHTML = svg;
+        return;
+      }
+      const vals = [];
+      monthly.forEach((m) => { vals.push(m.expense || 0, m.income || 0); });
+      const yMax = niceCeil(Math.max.apply(null, vals));
+      const px = (i) => x0 + (i / (monthly.length - 1)) * plotW;
+      const py = (v) => y1 - (v / yMax) * plotH;
+
+      // 渐变面积 + 裁剪（防止平滑曲线在底部基准线以下溢出）
+      svg += '<defs>' +
+        '<linearGradient id="grad-t-exp" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="' + TREND_EXPENSE_COLOR + '" stop-opacity="0.20"></stop>' +
+          '<stop offset="100%" stop-color="' + TREND_EXPENSE_COLOR + '" stop-opacity="0"></stop></linearGradient>' +
+        '<linearGradient id="grad-t-inc" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="' + TREND_INCOME_COLOR + '" stop-opacity="0.20"></stop>' +
+          '<stop offset="100%" stop-color="' + TREND_INCOME_COLOR + '" stop-opacity="0"></stop></linearGradient>' +
+        '<clipPath id="trend-clip"><rect x="' + (x0 - 6) + '" y="' + (y0 - 6) + '" width="' + (plotW + 12) + '" height="' + (plotH + 12) + '"></rect></clipPath>' +
+        '</defs>';
+
+      // 横向网格 + 纵轴刻度（零线作基准线稍深）
+      const ticks = [0, Math.floor(yMax / 2), yMax];
+      ticks.forEach((t) => {
+        const y = y1 - (t / yMax) * plotH;
+        svg += '<line x1="' + x0 + '" y1="' + y.toFixed(1) + '" x2="' + x1 + '" y2="' + y.toFixed(1) + '" stroke="' + (t === 0 ? '#dac0c4' : '#f0e5e8') + '" stroke-width="1"></line>';
+        svg += '<text x="' + (x0 - 6) + '" y="' + y.toFixed(1) + '" dominant-baseline="middle" text-anchor="end" fill="#877275" font-size="10">' + yuanCompact(t) + '</text>';
+      });
+      // 横轴月份标签
+      monthly.forEach((m, i) => {
+        svg += '<text x="' + px(i).toFixed(1) + '" y="' + (y1 + 15) + '" text-anchor="middle" fill="#877275" font-size="9">' + m.month + '月</text>';
+      });
+      // 折线组：渐变面积 + 平滑曲线 + 数据点（可整组显隐）
+      const lineGroup = (key, color) => {
+        const pts = monthly.map((m, i) => ({ x: px(i), y: py(m[key] || 0) }));
+        const lineD = smoothD(pts);
+        const areaD = lineD + ' L ' + pts[pts.length - 1].x.toFixed(1) + ' ' + y1 + ' L ' + pts[0].x.toFixed(1) + ' ' + y1 + ' Z';
+        let s = '<g data-key="' + key + '" clip-path="url(#trend-clip)" style="display:' + (trendVisible[key] ? '' : 'none') + '">';
+        s += '<path d="' + areaD + '" class="trend-area" fill="url(#grad-t-' + key + ')"></path>';
+        s += '<path d="' + lineD + '" class="trend-line" pathLength="1" fill="none" stroke="' + color + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>';
+        pts.forEach((p, i) => {
+          s += '<circle class="trend-dot" data-i="' + i + '" cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="3.4" fill="#ffffff" stroke="' + color + '" stroke-width="2"></circle>';
+        });
+        s += '</g>';
+        return s;
+      };
+      svg += lineGroup('expense', TREND_EXPENSE_COLOR);
+      svg += lineGroup('income', TREND_INCOME_COLOR);
+      // 悬停引导线 + 提示框（默认隐藏）
+      svg += '<line id="trend-guide" x1="' + x0 + '" y1="' + y0 + '" x2="' + x0 + '" y2="' + y1 + '" stroke="#dac0c4" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"></line>';
+      svg += '<g id="trend-tip" visibility="hidden"></g>';
+      // 逐月热区（透明矩形，承接悬停/点按）
+      const step = plotW / (monthly.length - 1);
+      monthly.forEach((m, i) => {
+        const cx = px(i);
+        svg += '<rect data-i="' + i + '" x="' + (cx - step / 2).toFixed(1) + '" y="' + y0 + '" width="' + step.toFixed(1) + '" height="' + plotH + '" fill="transparent"></rect>';
+      });
+      svg += '</svg>';
+      box.innerHTML = svg;
+
+      // —— 交互：悬停高亮 / 点按钉住 / 图例显隐 ——
+      let pinned = -1;
+      const highlight = (i) => {
+        const x = px(i);
+        const guide = box.querySelector('#trend-guide');
+        guide.setAttribute('x1', x.toFixed(1));
+        guide.setAttribute('x2', x.toFixed(1));
+        guide.setAttribute('visibility', 'visible');
+        box.querySelectorAll('.trend-dot').forEach((d) => {
+          d.style.transform = Number(d.dataset.i) === i ? 'scale(1.55)' : '';
+        });
+        const m = monthly[i];
+        const expY = py(m.expense || 0), incY = py(m.income || 0);
+        const topY = Math.min(expY, incY), botY = Math.max(expY, incY);
+        let tipY = topY - 48;             // 默认放较高点上方
+        if (tipY < 4) tipY = botY + 12;   // 上方放不下则放到较低点下方
+        const tw = 148;
+        const tx = Math.min(Math.max(x, tw / 2 + 4), W - tw / 2 - 4);
+        const tip = box.querySelector('#trend-tip');
+        tip.innerHTML =
+          '<rect x="' + (tx - tw / 2).toFixed(1) + '" y="' + tipY.toFixed(1) + '" width="' + tw + '" height="40" rx="10" fill="#342f31" opacity="0.95"></rect>' +
+          '<text x="' + tx.toFixed(1) + '" y="' + (tipY + 14).toFixed(1) + '" dominant-baseline="middle" text-anchor="middle" fill="#f9eef1" font-size="10" font-weight="700">' + m.month + '月</text>' +
+          '<text x="' + tx.toFixed(1) + '" y="' + (tipY + 30).toFixed(1) + '" dominant-baseline="middle" text-anchor="middle" fill="#f9eef1" font-size="10">' +
+            '<tspan fill="#ffb38f">支出 ¥' + yuanCompact(m.expense || 0) + '</tspan>' +
+            '<tspan fill="#a7c8ff"> · 收入 ¥' + yuanCompact(m.income || 0) + '</tspan>' +
+          '</text>';
+        tip.setAttribute('visibility', 'visible');
+      };
+      const unhighlight = () => {
+        const guide = box.querySelector('#trend-guide');
+        guide.setAttribute('visibility', 'hidden');
+        box.querySelectorAll('.trend-dot').forEach((d) => { d.style.transform = ''; });
+        box.querySelector('#trend-tip').setAttribute('visibility', 'hidden');
+      };
+      box.querySelectorAll('rect[data-i]').forEach((r) => {
+        const i = Number(r.dataset.i);
+        r.addEventListener('mouseenter', () => highlight(i));
+        r.addEventListener('mouseleave', () => { if (pinned < 0) unhighlight(); });
+        r.addEventListener('click', () => {
+          if (pinned === i) { pinned = -1; unhighlight(); }
+          else { pinned = i; highlight(i); }
+        });
+      });
+      legendEl.querySelectorAll('[data-trend-toggle]').forEach((span) => {
+        span.addEventListener('click', () => {
+          const key = span.dataset.trendToggle;
+          trendVisible[key] = !trendVisible[key];
+          span.style.opacity = trendVisible[key] ? '1' : '0.4';
+          const g = box.querySelector('g[data-key="' + key + '"]');
+          if (g) g.style.display = trendVisible[key] ? '' : 'none';
+        });
+      });
+    }
+
+    // 排行列表：按金额降序，分页渲染（PAGE_SIZE 条/页），滚到底/上滑到底自动加载下一页
+    function rankCats(type) {
+      return type === 'expense' ? (stats?.expenseCategories || []) : (stats?.incomeCategories || []);
+    }
+    function rankTotal(cats) {
+      return cats.reduce((sum, c) => sum + (c.amount || 0), 0);
+    }
+    // 单张排行卡片：图标/名称/笔数/金额/占比条
+    function makeRankItem(cat, i, total, unit) {
+      const pctNum = total > 0 ? (cat.amount / total * 100) : 0;
+      const color = CHART_COLORS[i % CHART_COLORS.length];
+      const item = document.createElement('div');
+      item.className = 'rounded-xl bg-surface-container-lowest p-space-md shadow-[0_2px_12px_rgba(155,63,90,0.04)] flex flex-col gap-space-xs';
+      item.innerHTML =
+        '<div class="flex items-center justify-between">' +
+          '<div class="flex items-center gap-space-sm">' +
+            '<div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style="background:' + color + '22;color:' + color + '">' +
+              '<span class="text-[18px] leading-none">' + esc(cat.icon || '📝') + '</span>' +
+            '</div>' +
+            '<div class="flex flex-col">' +
+              '<span class="text-label-lg text-on-surface">' + esc(cat.name) + '</span>' +
+              '<span class="text-body-sm text-on-surface-variant">' + (cat.count || 0) + unit + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="flex flex-col items-end">' +
+            '<span class="text-label-lg text-on-surface font-bold">¥ ' + centsToYuan(cat.amount) + '</span>' +
+            '<span class="text-body-sm text-primary">' + pctNum.toFixed(1) + '%</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden mt-1">' +
+          '<div class="h-full rounded-full" style="width:' + pctNum + '%;background:' + color + '"></div>' +
+        '</div>';
+      return item;
+    }
+    // 渲染第一页
+    function renderList(type) {
+      shown[type] = 0;
+      document.getElementById('list-' + type).innerHTML = '';
+      appendList(type);
+    }
+    // 追加一页（PAGE_SIZE 条）；末尾挂哨兵，滚到底/上滑到底时自动加载下一页
+    function appendList(type) {
+      const list = document.getElementById('list-' + type);
+      const cats = rankCats(type);
+      const total = rankTotal(cats);
+      const unit = type === 'expense' ? '笔消费' : '笔收入';
+      const start = shown[type];
+      const end = Math.min(start + PAGE_SIZE, cats.length);
+      const old = list.querySelector('.rank-sentinel');
+      if (old) old.remove();
+      for (let i = start; i < end; i++) list.appendChild(makeRankItem(cats[i], i, total, unit));
+      shown[type] = end;
+      const sentinel = document.createElement('div');
+      sentinel.className = 'rank-sentinel flex items-center justify-center py-2 text-body-sm text-on-surface-variant';
+      if (end < cats.length) sentinel.textContent = '继续滚动加载更多';
+      else if (cats.length > 0) { sentinel.textContent = '— 已显示全部 ' + cats.length + ' 条 —'; sentinel.dataset.done = '1'; }
+      else sentinel.dataset.done = '1';
+      list.appendChild(sentinel);
+    }
+    // 观察当前列表末尾哨兵：进入视口（桌面下滚 / 手机端上滑）即追加下一页
+    function observeSentinel(type) {
+      if (sentinelObserver) sentinelObserver.disconnect();
+      const sentinel = document.getElementById('list-' + type).querySelector('.rank-sentinel');
+      if (!sentinel || sentinel.dataset.done === '1') return;
+      sentinelObserver = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          appendList(type);
+          observeSentinel(type);
+        }
+      }, { rootMargin: '120px 0px' });
+      sentinelObserver.observe(sentinel);
+    }
+
+    function renderEmpty() {
+      const has = (stats?.totalCount || 0) > 0;
+      const empty = document.getElementById('empty-state');
+      if (has) { empty.classList.add('hidden'); empty.classList.remove('flex'); }
+      else { empty.classList.remove('hidden'); empty.classList.add('flex'); }
+    }
+
+    /* —— 年份选择器 —— */
+    function openYearPicker() {
+      // 可选年份 = 2000（账单可记账的最早年份）~ 当前自然年，单列展示；上界固定 THIS_YEAR，不随所选年份变化
+      const years = [];
+      for (let y = 2000; y <= THIS_YEAR; y++) years.push(y);
+      const grid = document.getElementById('year-grid');
       grid.innerHTML = '';
-      const first = new Date(viewY, viewM - 1, 1).getDay();   // 当月 1 日是周几
-      const dim = daysInMonth(viewY, viewM);
-      const t = today();
-      for (let i = 0; i < first; i++) grid.appendChild(document.createElement('span'));
-      for (let d = 1; d <= dim; d++) {
+      years.forEach((y) => {
         const b = document.createElement('button');
         b.type = 'button';
-        b.textContent = d;
-        const sel = d === cur.d && viewM === cur.m && viewY === cur.y;
-        const isToday = d === t.d && viewM === t.m && viewY === t.y;
-        b.className = 'h-9 w-9 rounded-full flex items-center justify-center text-label-lg font-bold transition-all active:scale-95 ' +
-          (sel ? 'bg-primary text-on-primary shadow-md'
-               : isToday ? 'text-primary bg-primary-fixed/50 hover:bg-primary-fixed'
-               : 'text-on-surface hover:bg-surface-container');
-        b.onclick = () => pickDay(viewY, viewM, d);
+        b.textContent = y + '年';
+        const sel = y === curYear;
+        b.className = 'py-2 rounded-full text-label-md transition-all active:scale-95 ' +
+          (sel ? 'bg-primary text-on-primary font-bold shadow-sm' : 'bg-surface-container-low text-on-surface-variant hover:bg-primary-fixed');
+        b.onclick = () => pickYear(y);
         grid.appendChild(b);
-      }
+      });
+      document.getElementById('year-pop').style.display = 'flex';
+    }
+    function closeYearPicker() {
+      document.getElementById('year-pop').style.display = 'none';
+    }
+    function pickYear(y) {
+      closeYearPicker();
+      if (y === curYear) return;
+      loadStats(y);
     }
 
-    function pickDay(y, m, d) {
-      cur = { y: y, m: m, d: d };
-      renderDate();
-      closeCalendar();
-    }
+    /* —— 导出数据：把当前年度统计整合为 Excel(.xlsx) 下载 —— */
+    function buildRows() {
+      const s = stats || {};
+      const expCats = s.expenseCategories || [];
+      const incCats = s.incomeCategories || [];
+      const expTotal = expCats.reduce((sum, c) => sum + (c.amount || 0), 0);
+      const incTotal = incCats.reduce((sum, c) => sum + (c.amount || 0), 0);
+      const maxExp = s.maxExpense && s.maxExpense.amount > 0 ? s.maxExpense : null;
 
-    function gotoToday() {
-      cur = today();
-      renderDate();
-      closeCalendar();
-    }
-
-    /* —— 导出数据：把本页演示数据（概览 + 支出/收入分类排行）生成 CSV 下载，月份跟随日期药丸 —— */
-    function buildCsv() {
-      const ym = cur.y + '年' + cur.m + '月';
       const rows = [
-        ['财务管家 月度统计'],
-        ['统计月份', ym],
+        ['财务管家 年度统计'],
+        ['统计年份', curYear + '年'],
         [],
-        ['概览指标', '数值'],
-        ['本月结余(元)', '3842.50'],
-        ['本月支出(元)', '5210.00'],
-        ['本月收入(元)', '9052.50'],
-        ['结余率', '42%'],
-        ['记账笔数', '48'],
-        ['日均支出(元)', '168.1'],
-        ['最大单笔(元)', '1280'],
+        ['记账概况', '数值'],
+        ['记账笔数', (s.totalCount || 0) + ' 笔'],
+        ['月均支出(元)', centsToYuan(s.monthlyAvgExpense || 0)],
+        ['最大单笔(元)', maxExp ? centsToYuan(maxExp.amount) + '（' + (maxExp.categoryName || '') + '）' : '—'],
         [],
         ['支出分类排行', '金额(元)', '笔数', '占比'],
-        ['餐饮美食', '1850.00', '18', '35.5%'],
-        ['服饰美容', '1280.00', '5', '24.6%'],
-        ['交通出行', '950.00', '12', '18.2%'],
-        ['住房物业', '800.00', '2', '15.3%'],
-        ['休闲娱乐', '330.00', '3', '6.4%'],
-        [],
-        ['收入分类排行', '金额(元)', '笔数', '占比'],
-        ['工资薪金', '8500.00', '1', '93.9%'],
-        ['其他收入', '552.50', '2', '6.1%']
       ];
-      const csv = '﻿' + rows.map(r => r.join(',')).join('\r\n');   // 带 BOM，Excel 打开中文不乱码
-      const name = '财务管家-月度统计-' + cur.y + String(cur.m).padStart(2, '0') + '.csv';
-      return { name: name, csv: csv };
+      expCats.forEach((c) => rows.push([c.name, centsToYuan(c.amount), String(c.count || 0), expTotal > 0 ? (c.amount / expTotal * 100).toFixed(1) + '%' : '0.0%']));
+      rows.push([]);
+      rows.push(['收入分类排行', '金额(元)', '笔数', '占比']);
+      incCats.forEach((c) => rows.push([c.name, centsToYuan(c.amount), String(c.count || 0), incTotal > 0 ? (c.amount / incTotal * 100).toFixed(1) + '%' : '0.0%']));
+      return rows;
     }
 
     function exportData() {
-      const data = buildCsv();
-      const blob = new Blob([data.csv], { type: 'text/csv;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = data.name;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      showExportToast('已导出 ' + data.name);
+      if (typeof XLSX === 'undefined') {
+        showExportToast('导出组件未加载，请联网后重试');
+        return;
+      }
+      const rows = buildRows();
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols'] = [{ wch: 16 }, { wch: 14 }, { wch: 10 }, { wch: 10 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '年度统计');
+      const name = '财务管家-年度统计-' + curYear + '.xlsx';
+      XLSX.writeFile(wb, name);
+      showExportToast('已导出 ' + name);
     }
 
     function showExportToast(text) {
@@ -536,9 +798,27 @@
       }, 2200);
     }
 
-    renderDate();
+    loadStats(curYear);
   </script>
 </div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-around items-center h-20 px-space-xs"><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="flow" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="text-label-sm">流水</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="add" href="#"><div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-md"><span class="material-symbols-outlined">add</span></div><span class="text-label-sm">记一笔</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 transition-all text-primary font-bold" data-path="stats" href="#"><span class="material-symbols-outlined">bar_chart</span><span class="text-label-sm">统计</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="profile" href="#"><span class="material-symbols-outlined">account_circle</span><span class="text-label-sm">我的</span></a></div></nav>
 <!-- proto-nav -->
 <script src="../assets/proto-nav.js?v=20261020-2" data-page="07_statistics_a"></script>
+<script>
+    // 图标字体就绪后再显示图标；此处内联脚本会等 head 里的字体样式表加载完才执行，3 秒超时兜底
+    (function () {
+      var ready = false;
+      function once() {
+        if (ready) return;
+        ready = true;
+        document.documentElement.classList.remove('icons-loading');
+      }
+      try {
+        document.fonts.load('20px "Material Symbols Outlined"').then(once, once);
+      } catch (e) {
+        once();
+        return;
+      }
+      setTimeout(once, 3000);
+    })();
+  </script>
 </body></html>

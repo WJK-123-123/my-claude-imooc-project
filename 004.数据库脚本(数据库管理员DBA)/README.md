@@ -4,7 +4,7 @@
 |---|---|
 | 数据库 | `financial_steward`（MySQL 8.0+，已在 MySQL 9.7.0 Docker 容器验证） |
 | 字符集 / 排序规则 | `utf8mb4` / `utf8mb4_0900_ai_ci`（emoji 图标、中文用户名必需；不区分大小写） |
-| 设计依据 | 《财务管家-PRD-V1.0.md》V1.6（F1–F7、§7 数据模型、附录 A）；003 原型 05/09/10/12/13 页 |
+| 设计依据 | 《财务管家-PRD-V1.0.md》V1.10（F1–F7、§7 数据模型、附录 A）；003 原型 05/09/10/12/13 页 |
 | 脚本 | `01_schema.sql` 建表（可重复执行，会清库重建）；`02_seed.sql` 模板 + 演示数据 |
 | 硬约定 | **金额一律以「分」为单位的整数存储，全程禁用浮点**；所有查询强制 `user_id` 过滤 |
 
@@ -22,8 +22,8 @@ user 1 ──── n password_reset_code（用户 → 找回密码验证码，C
 category 1 ──── n bill      （bill.category_id → RESTRICT：分类被引用不可物理删除）
 account  1 ──── n bill      （bill.account_id → SET NULL：账户删除后账单回落「未标记」）
 
-category_template / account_template ：无外键的全局只读模板，
-注册时由应用复制为 category / account 用户自有行（见 §5.1）
+category_template / account_template ：无外键的全局只读参考清单，
+V1.9 起注册不再复制，新账号 category / account 初始为空、由用户自行添加（见 §5.1）
 ```
 
 ## 2. 表清单
@@ -33,8 +33,8 @@ category_template / account_template ：无外键的全局只读模板，
 | 1 | `user` | F1 | 账号本体：用户名（大小写不敏感唯一）、密码哈希、注销状态机、登录锁定字段 |
 | 2 | `user_session` | F1-7/8 | 30 天滑动续期登录态（存令牌 SHA-256 哈希；改用 JWT 可不建） |
 | 3 | `password_reset_code` | F1-5 | 找回密码 6 位验证码（60s 重发间隔、错 5 次作废、用过即焚） |
-| 4 | `category_template` | 附录 A | 「生活账」分类模板，注册初始化数据源 |
-| 5 | `account_template` | F3-9 | 支付方式默认四项模板（微信/支付宝/现金/银行卡） |
+| 4 | `category_template` | 附录 A | 「生活账」分类模板清单（参考样例，注册不再复制） |
+| 5 | `account_template` | F3-9 | 支付方式默认四项参考样例（微信/支付宝/现金/银行卡） |
 | 6 | `category` | F3/F4/F7、13 页 | 用户分类：支出/收入双 scope、emoji 图标、排序、查重唯一约束 |
 | 7 | `account` | F3-9、12 页 | 支付方式/收款账户标记（**无任何金额字段**，非多账户余额体系） |
 | 8 | `bill` | F3/F4/F5/F7 | 账单流水：类型、金额（分）、分类、账户标记、备注、日期 |
@@ -46,11 +46,12 @@ category_template / account_template ：无外键的全局只读模板，
 ¥999,999.99（PRD F3-1）。展示层除以 100 转两位小数，除查询展示外任何环节不做浮点运算
 （F4-验收 1：合计与逐笔求和一致）。
 
-### 3.2 调整一：分类改为「注册时复制模板为用户自有行」
+### 3.2 调整一：分类均为用户自有行（V1.9 起注册不再复制模板）
 PRD §7 草案为「系统分类 user_id 为 NULL + is_system」。本设计改为**全部分类均为用户自有行**，
-注册时由应用从 `category_template` 复制（`is_system=1` 标记来源）。依据：
+`is_system` 仅标记「是否来自模板初始化」。V1.9 起注册不再从 `category_template` 复制，
+新账号分类初始为空、由用户自行添加（`is_system=0`）。依据：
 
-- F1-4 原文「账号按附录 A『生活账』模板**初始化分类**」即复制语义；
+- V1.9 起 F1-4 改为「新账号分类/账户初始为空、自行添加」，模板初始化语义已移除；
 - V1.1 路线图即有「分类编辑/删除/排序」，自有行天然支持，共享行会牵一发动全身；
 - 原型 13 页按用户维度整表 CRUD，读取无 `OR user_id IS NULL` 分支，索引更简单。
 
@@ -84,7 +85,7 @@ F1-1「查重不区分大小写（`XiaoLin` 与 `xiaolin` 同名）」及分类/
 
 | 索引 | 服务的查询 |
 |---|---|
-| `bill (user_id, bill_date, created_at)` | F4 月区间拉取 + 日组内 `created_at` 倒序；F7 月度聚合；F4-验收 1 |
+| `bill (user_id, bill_date, created_at)` | F4 月区间拉取 + 日组内 `created_at` 倒序；F7 年度聚合；F4-验收 1 |
 | `bill (user_id, category_id)` | 分类删除保护的引用检查；V1.1 分类管理 |
 | `category (user_id, scope, sort)` | F3-3 九宫格按类型加载（排序取默认选中项） |
 | `category (user_id, scope, name)` 唯一 | F3-4 新增分类查重 |
@@ -94,15 +95,12 @@ F1-1「查重不区分大小写（`XiaoLin` 与 `xiaolin` 同名）」及分类/
 
 ## 5. 应用侧对接约定
 
-### 5.1 注册初始化（F1-4，事务内三步）
+### 5.1 注册（F1-4，仅建号，不再初始化分类/账户）
 ```sql
 INSERT INTO user (username, password_hash) VALUES (?, ?);   -- 哈希由后端 bcrypt/argon2 生成
-SET @uid = LAST_INSERT_ID();
-INSERT INTO category (user_id, scope, name, icon, sort, is_system)
-  SELECT @uid, scope, name, icon, sort, 1 FROM category_template;
-INSERT INTO account (user_id, name, emoji, remark, sort)
-  SELECT @uid, name, emoji, remark, sort FROM account_template;
 ```
+新账号 `category`/`account` 初始为空；分类经 `POST /api/categories`、账户经 `POST /api/accounts`
+由用户自行添加并落库。
 
 ### 5.2 常用查询（后端可直接采用，保证 F7-验收 1 数字一致）
 
@@ -127,7 +125,7 @@ WHERE b.user_id = ? AND b.type = 'expense' AND b.bill_date >= ? AND b.bill_date 
 GROUP BY c.id, c.icon, c.name
 ORDER BY total DESC;
 
--- 记账概况（F7-6）：笔数 + 最大单笔支出；日均 = 支出合计 ÷ 天数（本月取已过天数，历史月取整月天数，由应用层计算）
+-- 记账概况（F7-6）：笔数 + 最大单笔支出；月均 = 支出合计 ÷ 月数（本年取已过月数，历史年取整年 12 个月，由应用层计算）
 SELECT COUNT(*) AS bill_count,
       (SELECT CONCAT(c.name, ' ', b.amount) FROM bill b JOIN category c ON c.id = b.category_id
        WHERE b.user_id = ? AND b.type = 'expense' AND b.bill_date >= ? AND b.bill_date < ?
@@ -168,3 +166,4 @@ docker exec -i <容器名> mysql -uroot -p123456 --default-character-set=utf8mb4
 | 版本 | 日期 | 说明 |
 |---|---|---|
 | V1.0 | 2026-10-20 | 首版：8 表 DDL + 附录 A 模板种子 + 演示数据；对应 PRD V1.6 / 原型 2026-10-19 状态 |
+| V1.1 | 2026-10-21 | 同步 PRD V1.9：注册不再复制模板，category_template/account_template 转为参考清单；02_seed 演示数据说明相应调整 |

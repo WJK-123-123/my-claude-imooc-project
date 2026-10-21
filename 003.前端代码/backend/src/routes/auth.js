@@ -31,7 +31,7 @@ router.post('/register', async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // 建号 + 按模板初始化分类/账户，同一事务保证「要么全套、要么没有」
+    // 建号：分类/账户不再按模板初始化，新账号两表均为空，由用户自行添加（新增走 /api/category、/api/account 落库）
     conn = await pool.getConnection();
     await conn.beginTransaction();
     const [result] = await conn.query(
@@ -39,16 +39,6 @@ router.post('/register', async (req, res, next) => {
       [username, passwordHash]
     );
     const userId = result.insertId;
-    await conn.query(
-      `INSERT INTO category (user_id, scope, name, icon, sort, is_system)
-       SELECT ?, scope, name, icon, sort, 1 FROM category_template`,
-      [userId]
-    );
-    await conn.query(
-      `INSERT INTO account (user_id, name, emoji, remark, sort)
-       SELECT ?, name, emoji, remark, sort FROM account_template`,
-      [userId]
-    );
     await conn.commit();
 
     await createSession(res, userId); // 注册成功即自动登录（F1-4）
@@ -137,6 +127,36 @@ router.post('/login', async (req, res, next) => {
     );
     await createSession(res, user.id);
     res.json({ user: { id: user.id, username: user.username } });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ================= 找回密码：重置密码（简化版，暂未接入验证码） ================= */
+router.post('/reset-password', async (req, res, next) => {
+  try {
+    const { username, password, confirmPassword } = req.body || {};
+    const invalid = validatePassword(password);
+    if (invalid) return fail(res, 400, invalid);
+    if (password !== confirmPassword) return fail(res, 400, '两次输入的密码不一致');
+
+    const [rows] = await pool.query(
+      'SELECT id, username, status FROM user WHERE username = ?',
+      [username]
+    );
+    const user = rows[0];
+    // 用户名不存在 / 已注销墓碑：提示「用户名不存在」（PRD F1-5）；墓碑行不可找回，防止冒用
+    if (!user || user.status === 'deleted') return fail(res, 404, '用户名不存在');
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    // 更新哈希并清零失败计数/锁定，旧密码立即失效（F1-5）
+    await pool.query(
+      'UPDATE user SET password_hash = ?, failed_login_count = 0, locked_until = NULL WHERE id = ?',
+      [passwordHash, user.id]
+    );
+
+    // 重置成功即回登录页，不自动登录（PRD F1-5「重置成功跳回登录页」）
+    res.json({ message: '密码重置成功，请重新登录' });
   } catch (err) {
     next(err);
   }

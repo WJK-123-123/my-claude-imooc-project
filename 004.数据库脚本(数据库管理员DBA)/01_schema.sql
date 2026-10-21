@@ -111,11 +111,11 @@ CREATE TABLE `password_reset_code` (
   COMMENT = '找回密码验证码表（PRD F1-5：60s 重发间隔、错 5 次作废）';
 
 -- =====================================================================================
--- 表 4：category_template —— 分类模板（注册初始化数据源，PRD 附录 A「生活账」）
+-- 表 4：category_template —— 分类模板清单（仅作参考，PRD 附录 A「生活账」）
 -- -------------------------------------------------------------------------------------
--- · 与 category 表结构对齐但无 user_id：全局只读的模板清单，
---   注册时由应用执行「INSERT INTO category ... SELECT ... FROM category_template」复制为用户自有分类
--- · 模板调整（如 V1.6 全员统一「生活账」）只改本表种子数据，不影响存量用户已复制的分类
+-- · 与 category 表结构对齐但无 user_id：全局只读的参考清单。V1.9 起注册不再复制模板，
+--   新账号分类初始为空、由用户自行添加；本表仅存附录 A 生活账样例，供演示/参考
+-- · 不再被注册接口读取；如确需给存量账号批量补分类，可按本表 SELECT 复制（is_system=1）
 -- =====================================================================================
 CREATE TABLE `category_template` (
   `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '模板行 ID（主键）',
@@ -129,13 +129,13 @@ CREATE TABLE `category_template` (
   CONSTRAINT `uq_ct_scope_name` UNIQUE (`scope`, `name`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
-  COMMENT = '分类模板表：新账号注册初始化分类的数据源（PRD 附录 A 生活账）';
+  COMMENT = '分类模板清单：PRD 附录 A 生活账样例（V1.9 起仅作参考，注册不再复制）';
 
 -- =====================================================================================
--- 表 5：account_template —— 支付方式（账户）默认模板（F3-9 四个默认标记项）
+-- 表 5：account_template —— 支付方式（账户）默认模板清单（F3-9 参考样例）
 -- -------------------------------------------------------------------------------------
--- · 注册时复制为用户自有账户（对应 003 原型 12 账户管理页初始数据）
--- · 注意：仅是账单的「支付方式标记」，无余额字段——不构成 PRD 3.2 范围外的多账户余额体系
+-- · 仅作参考清单：V1.9 起注册不再复制，新账号账户初始为空、由用户自行添加
+-- · 注意：账户仅是账单的「支付方式标记」，无余额字段——不构成 PRD 3.2 范围外的多账户余额体系
 -- =====================================================================================
 CREATE TABLE `account_template` (
   `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '模板行 ID（主键）',
@@ -149,15 +149,15 @@ CREATE TABLE `account_template` (
   CONSTRAINT `uq_at_name` UNIQUE (`name`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
-  COMMENT = '支付方式默认模板：注册时复制为用户账户（F3-9 固定四项的初始来源）';
+  COMMENT = '支付方式默认模板清单：F3-9 参考样例（V1.9 起仅作参考，注册不再复制）';
 
 -- =====================================================================================
 -- 表 6：category —— 记账分类（F3-3/3-4 九宫格、F4 流水展示、F7 分类占比、13 分类管理页）
 -- -------------------------------------------------------------------------------------
--- · 实现层调整（相对 PRD §7 草案「系统分类 user_id 为 NULL」）：分类全部为用户自有行，
---   注册时按 category_template 复制初始化（依据 F1-4「账号按附录 A 模板初始化分类」）。
+-- · 实现层调整（相对 PRD §7 草案「系统分类 user_id 为 NULL」）：分类全部为用户自有行。
+--   V1.9 起注册不再复制模板，新账号分类初始为空、由用户自行添加（is_system=0）；
 --   好处：天然支持 V1.1 的分类编辑/删除/排序，查询无需 OR NULL 分支；
---   is_system=1 标记「来自模板初始化」，与用户新增（is_system=0）在 V1 行为一致
+--   is_system 仅标记「是否来自模板复制」（当前均为 0，V1 内与用户新增行为一致）
 -- · 唯一约束 (user_id, scope, name) + 不区分大小写排序规则 → F3-4 分类查重；
 --   「其他」兜底分类同样是普通行，不特殊对待
 -- =====================================================================================
@@ -168,7 +168,7 @@ CREATE TABLE `category` (
   `name`       VARCHAR(16)     NOT NULL COMMENT '分类名称（V1 新增限 ≤4 个汉字——F3-4，应用层校验；列宽为 V1.1 放宽预留）',
   `icon`       VARCHAR(16)     NOT NULL DEFAULT '📝' COMMENT '分类图标（emoji，置于浅粉圆底展示）',
   `sort`       INT             NOT NULL DEFAULT 0 COMMENT '九宫格排序（值小在前，默认选中第一个分类即 sort 最小者）',
-  `is_system`  TINYINT(1)      NOT NULL DEFAULT 0 COMMENT '是否模板初始化：1=注册时自附录 A 复制 / 0=用户自定义新增（V1 内两者行为一致）',
+  `is_system`  TINYINT(1)      NOT NULL DEFAULT 0 COMMENT '是否模板初始化：1=自附录 A 模板复制（V1.9 起注册不再复制，均为 0）/ 0=用户自定义新增（V1 内两者行为一致）',
   `created_at` DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_cat_user_scope_name` (`user_id`, `scope`, `name`),
@@ -176,7 +176,7 @@ CREATE TABLE `category` (
   CONSTRAINT `fk_cat_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
-  COMMENT = '记账分类表：支出/收入双 scope 九宫格（PRD F3/F4/F7；注册按模板初始化）';
+  COMMENT = '记账分类表：支出/收入双 scope 九宫格（PRD F3/F4/F7；注册不初始化，用户自行添加）';
 
 -- =====================================================================================
 -- 表 7：account —— 支付方式（账户）标记（F3-9 选填标记 + 12 账户管理页 CRUD）
@@ -224,7 +224,7 @@ CREATE TABLE `bill` (
   `created_at`  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录时间（首次保存时间；F4-3 组内倒序、F5-1 详情展示）',
   `updated_at`  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近编辑时间（F5 编辑）',
   PRIMARY KEY (`id`),
-  KEY `idx_bill_user_date_created` (`user_id`, `bill_date`, `created_at`) COMMENT 'F4 月区间查询 + 日组内 created_at 倒序；F7 月度聚合',
+  KEY `idx_bill_user_date_created` (`user_id`, `bill_date`, `created_at`) COMMENT 'F4 月区间查询 + 日组内 created_at 倒序；F7 年度聚合',
   KEY `idx_bill_user_category` (`user_id`, `category_id`) COMMENT '分类引用检查（删除保护）与按分类回查',
   CONSTRAINT `fk_bill_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_bill_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE RESTRICT,

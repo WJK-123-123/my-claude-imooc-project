@@ -8,6 +8,7 @@ import accountRoutes from './routes/account.js';
 import categoryRoutes from './routes/category.js';
 import profileRoutes from './routes/profile.js';
 import billsRoutes from './routes/bills.js';
+import statsRoutes from './routes/stats.js';
 import { getSessionUser, SESSION_COOKIE } from './utils/session.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,6 +29,7 @@ app.use('/api/accounts', accountRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/bills', billsRoutes);
+app.use('/api/stats', statsRoutes);
 app.use('/api', (req, res) => res.status(404).json({ message: '接口不存在' }));
 
 // ---- 页面登录守卫（PRD §8：未登录时除登录/注册/找回密码外全部重定向登录页） ----

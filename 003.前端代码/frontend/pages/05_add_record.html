@@ -103,7 +103,12 @@
     }
     .animate-fade-in { animation: proto-fade-in 0.18s ease-out; }
     .material-symbols-outlined { user-select: none; }
+    /* 图标字体（Material Symbols 连字）就绪前先隐藏，避免刷新时闪现英文图标名；JS 禁用时不加类、不受影响 */
+    html.icons-loading .material-symbols-outlined {
+      visibility: hidden;
+    }
   </style>
+  <script>document.documentElement.classList.add('icons-loading');</script>
   </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="财务管家 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"><span class="text-headline-md font-headline-md text-on-surface">记一笔</span></div><button aria-label="个人中心" type="button" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform cursor-pointer" onclick="location.href='10_profile.html'"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></button></div></header><main class="flex flex-col relative w-full px-gutter pt-16 pb-24 bg-[#FFF4F7] flex-1"><div class="flex flex-col w-full pb-12">
 <!-- Top Segmented Switcher: Expense vs Income -->
 <div class="flex justify-center mb-space-lg">
@@ -497,4 +502,22 @@
 </div></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-bold"><div class="flex justify-around items-center h-20 px-space-xs"><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="flow" href="#"><span class="material-symbols-outlined">receipt_long</span><span class="text-label-sm">流水</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 transition-all text-primary font-bold" data-path="add" href="#"><div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-md"><span class="material-symbols-outlined">add</span></div><span class="text-label-sm">记一笔</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="stats" href="#"><span class="material-symbols-outlined">bar_chart</span><span class="text-label-sm">统计</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="profile" href="#"><span class="material-symbols-outlined">account_circle</span><span class="text-label-sm">我的</span></a></div></nav>
 <!-- proto-nav -->
 <script src="../assets/proto-nav.js?v=20261020-2" data-page="05_add_record"></script>
+<script>
+    // 图标字体就绪后再显示图标；此处内联脚本会等 head 里的字体样式表加载完才执行，3 秒超时兜底
+    (function () {
+      var ready = false;
+      function once() {
+        if (ready) return;
+        ready = true;
+        document.documentElement.classList.remove('icons-loading');
+      }
+      try {
+        document.fonts.load('20px "Material Symbols Outlined"').then(once, once);
+      } catch (e) {
+        once();
+        return;
+      }
+      setTimeout(once, 3000);
+    })();
+  </script>
 </body></html>

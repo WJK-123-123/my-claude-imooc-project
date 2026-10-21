@@ -93,7 +93,7 @@
     }
   }
 </script><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Quicksand:wght@600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script><style>
     body {
       min-height: max(884px, 100dvh);
     }
@@ -103,8 +103,26 @@
     }
     .animate-fade-in { animation: proto-fade-in 0.18s ease-out; }
     .material-symbols-outlined { user-select: none; }
+    /* 图标字体（Material Symbols 连字）就绪前先隐藏，避免刷新时闪现英文图标名；JS 禁用时不加类、不受影响 */
+    html.icons-loading .material-symbols-outlined {
+      visibility: hidden;
+    }
   </style>
-  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="财务管家 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"><span class="text-headline-md font-headline-md text-on-surface">账单流水</span><span class="px-2.5 py-0.5 rounded-full bg-primary-fixed/60 text-label-md text-on-primary-container tracking-wide" id="header-month">—</span></div><button aria-label="个人中心" type="button" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform cursor-pointer" onclick="location.href='10_profile.html'"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></button></div></header><main class="flex flex-col relative w-full px-6 pt-20 pb-32 bg-[#FFF4F7] flex-1" style="letter-spacing: 0.025em; line-height: 1.625;"><div class="flex flex-col w-full pb-10">
+  <script>document.documentElement.classList.add('icons-loading');</script>
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="财务管家 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"><span class="text-headline-md font-headline-md text-on-surface">账单流水</span></div><button aria-label="个人中心" type="button" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform cursor-pointer" onclick="location.href='10_profile.html'"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></button></div></header><main class="flex flex-col relative w-full px-6 pt-20 pb-32 bg-[#FFF4F7] flex-1" style="letter-spacing: 0.025em; line-height: 1.625;"><div class="flex flex-col w-full pb-10">
+<!-- 月份切换（PRD F4-1）：‹ 2026年10月 › 左右切月 + 回到本月 -->
+<div class="flex items-center justify-between mb-3">
+<button class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed active:scale-95 transition-all disabled:opacity-30" id="month-prev" onclick="shiftMonth(-1)" type="button" aria-label="上个月">
+<span class="material-symbols-outlined text-[22px]">chevron_left</span>
+</button>
+<span class="text-headline-md font-headline-md text-on-surface tracking-wide" id="month-label">本月</span>
+<button class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed active:scale-95 transition-all disabled:opacity-30" id="month-next" onclick="shiftMonth(1)" type="button" aria-label="下个月">
+<span class="material-symbols-outlined text-[22px]">chevron_right</span>
+</button>
+</div>
+<div class="flex justify-center -mt-1 mb-6">
+<button class="hidden px-4 py-1 rounded-full bg-primary-fixed/60 text-on-primary-container text-body-sm font-label-md hover:bg-primary-fixed active:scale-95 transition-all" id="back-this-month" onclick="backToCurrentMonth()" type="button">回到本月</button>
+</div>
 <!-- Monthly Summary Card（三指标齐平三等分） -->
 <div class="bg-surface-container-lowest rounded-3xl p-6 mb-8 shadow-[0_4px_24px_rgba(155,63,90,0.06)] relative overflow-hidden">
 <!-- Decorative background glow -->
@@ -114,32 +132,42 @@
 <div class="flex flex-col items-center text-center gap-1.5">
 <div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant tracking-wide">
 <span class="material-symbols-outlined text-primary text-[18px]">account_balance_wallet</span>
-<span class="">本月结余</span>
+<span class="" id="sum-balance-label">本月结余</span>
 </div>
 <span class="text-body-lg font-headline-md font-bold text-primary tracking-wide" id="sum-balance">¥ 0.00</span>
 </div>
 <div class="flex flex-col items-center text-center gap-1.5">
 <div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant tracking-wide">
 <span class="material-symbols-outlined text-[14px] text-tertiary">arrow_upward</span>
-<span class="">本月支出</span>
+<span class="" id="sum-expense-label">本月支出</span>
 </div>
 <span class="text-body-lg font-headline-md font-bold text-on-surface tracking-wide" id="sum-expense">¥ 0.00</span>
 </div>
 <div class="flex flex-col items-center text-center gap-1.5">
 <div class="flex items-center gap-1.5 text-body-sm text-on-surface-variant tracking-wide">
 <span class="material-symbols-outlined text-[14px] text-secondary">arrow_downward</span>
-<span class="">本月收入</span>
+<span class="" id="sum-income-label">本月收入</span>
 </div>
 <span class="text-body-lg font-headline-md font-bold text-secondary tracking-wide" id="sum-income">¥ 0.00</span>
 </div>
 </div>
 </div>
 <!-- Filter & Search Bar -->
-<div class="flex items-center justify-between mb-5 px-1.5">
+<div class="flex items-center justify-between mb-4 px-1.5">
 <div class="text-label-lg font-label-lg text-on-surface flex items-center gap-2 tracking-wide">
 <span class="material-symbols-outlined text-primary text-[20px]">receipt_long</span>
 <span class="">收支明细</span>
 </div>
+<button id="export-btn" aria-label="导出数据" class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary-fixed/70 text-primary font-label-md text-label-md hover:bg-primary-fixed active:scale-95 transition-all disabled:opacity-50" onclick="exportData()" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+<span>导出数据</span>
+</button>
+</div>
+<!-- 类型筛选：全部 / 支出 / 收入 -->
+<div class="flex items-center gap-2 mb-6 px-1.5">
+<button class="flex-1 py-2 rounded-full text-label-lg transition-all bg-primary text-on-primary shadow-sm" id="filter-all" onclick="setFilter('all')" type="button">全部</button>
+<button class="flex-1 py-2 rounded-full text-label-lg transition-all text-on-surface-variant hover:text-on-surface" id="filter-expense" onclick="setFilter('expense')" type="button">支出</button>
+<button class="flex-1 py-2 rounded-full text-label-lg transition-all text-on-surface-variant hover:text-on-surface" id="filter-income" onclick="setFilter('income')" type="button">收入</button>
 </div>
 <!-- Transaction List (Grouped by Date) -->
 <div class="flex flex-col gap-8" id="bill-list"></div>
@@ -154,7 +182,7 @@
 <span class="material-symbols-outlined text-primary text-[64px]" style="font-variation-settings: &quot;FILL&quot; 1;">cruelty_free</span>
 <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent"></div>
 </div>
-<h3 class="text-headline-md font-headline-md text-on-surface mb-space-xs">这个月还没有记账哦</h3>
+<h3 class="text-headline-md font-headline-md text-on-surface mb-space-xs" id="empty-title">这个月还没有记账哦</h3>
 <p class="text-body-md text-on-surface-variant max-w-[240px] mb-space-lg">让每一笔小开销都变成生活可爱的小脚印吧～</p>
 <button class="px-6 py-3 bg-primary text-on-primary rounded-full shadow-lg hover:opacity-90 font-label-lg transition-all active:scale-95 flex items-center gap-2">
 <span class="material-symbols-outlined">add_circle</span>
@@ -198,8 +226,79 @@
 </div>
 </div>
 <div class="flex gap-4">
-<button class="flex-1 py-3 bg-surface-container text-on-surface rounded-full font-label-lg hover:bg-surface-container-high transition-all tracking-wide" onclick="closeDetailModal()">删除记录</button>
-<button class="flex-1 py-3 bg-primary text-on-primary rounded-full font-label-lg shadow-md hover:opacity-90 transition-all tracking-wide" onclick="closeDetailModal()">编辑</button>
+<button class="flex-1 py-3 bg-surface-container text-on-surface rounded-full font-label-lg hover:bg-surface-container-high transition-all tracking-wide" onclick="confirmDelete()">删除记录</button>
+<button class="flex-1 py-3 bg-primary text-on-primary rounded-full font-label-lg shadow-md hover:opacity-90 transition-all tracking-wide" onclick="openEdit()">编辑</button>
+</div>
+</div>
+</div>
+<!-- Delete Confirm Modal（二次确认，PRD F5-3） -->
+<div class="fixed inset-0 z-[120] bg-inverse-surface/40 backdrop-blur-sm hidden items-center justify-center px-6" id="delete-confirm-modal">
+<div class="bg-surface-container-lowest w-full max-w-xs rounded-3xl p-6 shadow-xl text-center">
+<div class="w-12 h-12 rounded-full bg-error-container text-tertiary flex items-center justify-center mx-auto mb-3">
+<span class="material-symbols-outlined text-[26px]">delete_forever</span>
+</div>
+<h3 class="text-headline-md font-headline-md text-on-surface mb-1">确认删除这条记录？</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">删除后不可恢复，月统计也会同步更新哦。</p>
+<div class="flex items-center gap-2.5">
+<button class="flex-1 py-2.5 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md" onclick="closeDeleteConfirm()" type="button">取消</button>
+<button class="flex-1 py-2.5 rounded-full bg-tertiary text-on-tertiary font-label-md text-label-md shadow-sm" id="confirm-delete-btn" onclick="doDelete()" type="button">确认删除</button>
+</div>
+</div>
+</div>
+<!-- Export Success Toast -->
+<div class="fixed bottom-28 inset-x-0 z-[80] flex justify-center pointer-events-none opacity-0 transition-opacity duration-300" id="export-toast">
+<div class="flex items-center gap-2 px-space-md py-2.5 rounded-full bg-inverse-surface/90 text-inverse-on-surface text-body-sm shadow-lg">
+<span class="material-symbols-outlined text-[16px] text-inverse-primary">check_circle</span>
+<span id="export-toast-text">已导出</span>
+</div>
+</div>
+<!-- Edit Bill Modal（居中编辑框：类型/金额/分类/备注/日期/账户，PRD F5-2） -->
+<div class="fixed inset-0 z-[110] bg-inverse-surface/40 backdrop-blur-sm items-center justify-center px-6" id="edit-overlay" style="display:none">
+<div class="bg-surface-container-lowest w-full max-w-sm rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+<header class="px-5 py-4 flex items-center justify-between border-b border-surface-container shrink-0">
+<span class="text-headline-md font-headline-md text-on-surface">编辑账单</span>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant" onclick="closeEdit()" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</header>
+<div class="flex-1 overflow-y-auto px-5 py-4">
+<div class="flex justify-center mb-4">
+<div class="bg-surface-container-high p-1 rounded-full flex gap-1 w-56 shadow-sm">
+<button class="flex-1 py-2 rounded-full text-label-lg transition-all" id="edit-tab-expense" onclick="editSwitchTab('expense')" type="button">支出</button>
+<button class="flex-1 py-2 rounded-full text-label-lg transition-all" id="edit-tab-income" onclick="editSwitchTab('income')" type="button">收入</button>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-4 shadow-sm mb-4 flex flex-col items-center justify-center">
+<span class="text-body-sm text-on-surface-variant mb-1">金额</span>
+<div class="flex items-center gap-1">
+<span class="text-headline-lg font-headline-lg" id="edit-currency">¥</span>
+<input class="bg-transparent text-headline-xl font-headline-xl text-on-surface text-center w-44 focus:outline-none" id="edit-amount" inputmode="decimal" type="text" value="0.00">
+</div>
+</div>
+<div class="mb-4">
+<span class="text-label-lg text-on-surface-variant block mb-2 px-1">选择分类</span>
+<div class="grid grid-cols-3 gap-2" id="edit-category-grid"></div>
+</div>
+<div class="flex flex-col gap-2.5">
+<div class="flex items-center gap-2 bg-surface-container-low rounded-xl px-3 py-2.5">
+<span class="material-symbols-outlined text-primary text-[20px]">edit_note</span>
+<input class="bg-transparent w-full text-on-surface text-body-md focus:outline-none placeholder:text-surface-dim" id="edit-note" maxlength="50" placeholder="这笔钱花在哪里了？" type="text">
+</div>
+<div class="flex items-center gap-2 bg-surface-container-low rounded-xl px-3 py-2.5">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+<input class="bg-transparent w-full text-on-surface text-body-sm focus:outline-none" id="edit-date" type="date">
+</div>
+<div>
+<span class="text-body-sm text-on-surface-variant block mb-1.5" id="edit-acct-label">账户</span>
+<div class="flex flex-wrap gap-1.5" id="edit-acct-grid"></div>
+</div>
+</div>
+</div>
+<div class="px-5 py-4 border-t border-surface-container shrink-0">
+<button class="w-full py-3 rounded-full bg-primary text-on-primary font-label-lg shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-1.5" id="edit-save-btn" onclick="submitEdit()" type="button">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span>保存修改</span>
+</button>
 </div>
 </div>
 </div>
@@ -216,6 +315,8 @@
     let loading = false;
     let hasMore = true;
     let lastDate = null;      // 已渲染的最后一个日分组日期，跨页时同一天续在同一组内
+    let viewMonth = nowYM();  // 当前浏览月份 'YYYY-MM'，默认本月（F4-1）
+    let filter = 'all';       // 收支明细类型筛选：all / expense / income
 
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
     function esc(s) {
@@ -265,7 +366,7 @@
       loading = true;
       setLoading(true);
       try {
-        const r = await fetch('/api/bills?offset=' + offset + '&limit=' + PAGE_SIZE);
+        const r = await fetch('/api/bills?month=' + viewMonth + '&offset=' + offset + '&limit=' + PAGE_SIZE + (filter === 'all' ? '' : '&type=' + filter));
         if (r.status === 401) { location.replace('02_login.html'); return; }
         const data = await r.json();
         if (!r.ok) throw new Error(data.message || '加载失败');
@@ -276,11 +377,16 @@
           dayMap = new Map((data.dayTotals || []).map(function (d) { return [d.date, d]; }));
           renderMonth();
           renderSummary();
+          updateMonthControls();
           if (total === 0) {
             document.getElementById('bill-list').classList.add('hidden');
             const empty = document.getElementById('empty-state');
             empty.classList.remove('hidden');
             empty.classList.add('flex');
+            document.getElementById('empty-title').textContent =
+              filter === 'expense' ? '这个月还没有支出记录哦'
+              : filter === 'income' ? '这个月还没有收入记录哦'
+              : '这个月还没有记账哦';
             hasMore = false;
             return;
           }
@@ -319,9 +425,12 @@
       const dt = dayMap.get(dateStr) || { expense: 0, income: 0 };
       const head = document.createElement('div');
       head.className = 'flex items-center justify-between text-body-sm text-on-surface-variant px-1 tracking-wide mb-1';
+      const totals = filter === 'expense' ? '支出 ¥' + centsToYuan(dt.expense)
+                   : filter === 'income' ? '收入 ¥' + centsToYuan(dt.income)
+                   : '支出 ¥' + centsToYuan(dt.expense) + ' · 收入 ¥' + centsToYuan(dt.income);
       head.innerHTML =
         '<span class="font-bold text-on-surface">' + dayLabel(dateStr) + '</span>' +
-        '<span class="tracking-wide">支出 ¥' + centsToYuan(dt.expense) + ' · 收入 ¥' + centsToYuan(dt.income) + '</span>';
+        '<span class="tracking-wide">' + totals + '</span>';
       group.appendChild(head);
       return group;
     }
@@ -352,6 +461,7 @@
     }
 
     function openDetail(b) {
+      currentBill = b;
       document.getElementById('modal-category').innerText = b.categoryName;
       document.getElementById('modal-icon').textContent = b.categoryIcon || '📝';
       document.getElementById('modal-amount').innerText = (b.type === 'income' ? '+' : '-') + '¥' + centsToYuan(b.amount);
@@ -381,8 +491,16 @@
     }
 
     function renderMonth() {
-      const el = document.getElementById('header-month');
-      if (el) el.textContent = month || '—';
+      const el = document.getElementById('month-label');
+      if (el) el.textContent = month || '本月';
+      // 摘要卡标签跟随所选月份：本月 → 「本月结余」，其它月份 → 「N月结余」
+      const prefix = viewMonth === nowYM() ? '本月' : (parseInt(viewMonth.slice(5, 7), 10) + '月');
+      const balanceLabel = document.getElementById('sum-balance-label');
+      const expenseLabel = document.getElementById('sum-expense-label');
+      const incomeLabel = document.getElementById('sum-income-label');
+      if (balanceLabel) balanceLabel.textContent = prefix + '结余';
+      if (expenseLabel) expenseLabel.textContent = prefix + '支出';
+      if (incomeLabel) incomeLabel.textContent = prefix + '收入';
     }
 
     function renderSummary() {
@@ -392,12 +510,344 @@
       document.getElementById('sum-income').textContent = '¥ ' + centsToYuan(summary.income);
     }
 
+    /* —— 月份切换（PRD F4-1）：‹ 2026年10月 › 左右切月，最早到有账单的月份、最晚到本月 —— */
+    function nowYM() {
+      const n = new Date();
+      return n.getFullYear() + '-' + pad(n.getMonth() + 1);
+    }
+    function addMonthsYM(ym, delta) {
+      const p = ym.split('-').map(Number);
+      const d = new Date(p[0], p[1] - 1 + delta, 1);
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1);
+    }
+    function updateMonthControls() {
+      const prev = document.getElementById('month-prev');
+      const next = document.getElementById('month-next');
+      const back = document.getElementById('back-this-month');
+      const cur = nowYM();
+      // 右箭头：不晚于本月（PRD F4-1「最晚到本月」）；左箭头：可回看空月份，仅设很早的下限防无限回退
+      if (prev) prev.disabled = viewMonth <= '2000-01';
+      if (next) next.disabled = viewMonth >= cur;
+      if (back) back.classList.toggle('hidden', viewMonth >= cur);
+    }
+    function shiftMonth(delta) {
+      const target = addMonthsYM(viewMonth, delta);
+      if (target < '2000-01' || target > nowYM()) return; // 不越界：最早 2000-01 / 本月
+      viewMonth = target;
+      updateMonthControls();
+      reloadAll();
+    }
+    function backToCurrentMonth() {
+      viewMonth = nowYM();
+      updateMonthControls();
+      reloadAll();
+    }
+
+    /* —— 收支明细类型筛选：全部 / 支出 / 收入 —— */
+    function setFilter(f) {
+      if (filter === f) return;
+      filter = f;
+      renderFilterTabs();
+      reloadAll();
+    }
+    function renderFilterTabs() {
+      var tabs = { all: 'filter-all', expense: 'filter-expense', income: 'filter-income' };
+      Object.keys(tabs).forEach(function (k) {
+        var el = document.getElementById(tabs[k]);
+        if (!el) return;
+        el.className = 'flex-1 py-2 rounded-full text-label-lg transition-all ' +
+          (k === filter ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface');
+      });
+    }
+
     // 电脑向下滚动 / 手机向上滑动，都是滚到底部附近即加载下一页
     window.addEventListener('scroll', function () {
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200) {
         loadMore();
       }
     });
+
+    /* ===== 账单详情操作：编辑 + 删除（接后端 /api/bills/:id，PRD F5） ===== */
+    let currentBill = null;
+    let editCats = { expense: [], income: [] };
+    let editAccounts = [];
+    let editTab = 'expense';
+    let editCatSel = { expense: -1, income: -1 };
+    let editAcctSelId = null;
+
+    function centsToPlainYuan(c) {
+      return Math.floor(c / 100) + '.' + String(c % 100).padStart(2, '0');
+    }
+    function yuanToCents(s) {
+      const t = String(s || '').trim();
+      if (!/^\d+(\.\d{0,2})?$/.test(t)) return null;
+      const p = t.split('.');
+      const cents = parseInt(p[0], 10) * 100 + (p[1] ? parseInt(p[1].padEnd(2, '0'), 10) : 0);
+      if (cents < 1 || cents > 99999999) return null;
+      return cents;
+    }
+
+    async function loadEditData() {
+      try {
+        const [cr, ar] = await Promise.all([fetch('/api/categories'), fetch('/api/accounts')]);
+        if (cr.status === 401 || ar.status === 401) { location.replace('02_login.html'); return; }
+        const cd = await cr.json();
+        const ad = await ar.json();
+        const all = cd.categories || [];
+        editCats = { expense: [], income: [] };
+        all.forEach(function (c) { editCats[c.scope].push(c); });
+        editAccounts = ad.accounts || [];
+      } catch (e) {
+        editCats = { expense: [], income: [] };
+        editAccounts = [];
+      }
+    }
+
+    function openEdit() {
+      if (!currentBill) return;
+      editTab = currentBill.type;
+      editCatSel = { expense: -1, income: -1 };
+      document.getElementById('edit-amount').value = centsToPlainYuan(currentBill.amount);
+      document.getElementById('edit-note').value = currentBill.note || '';
+      document.getElementById('edit-date').value = currentBill.billDate;
+      editAcctSelId = currentBill.accountId != null ? currentBill.accountId : null;
+      loadEditData().then(function () {
+        const arr = editCats[editTab] || [];
+        arr.forEach(function (c, i) { if (c.id === currentBill.categoryId) editCatSel[editTab] = i; });
+        editRenderAll();
+        document.getElementById('edit-overlay').style.display = 'flex';
+      });
+    }
+    function closeEdit() {
+      document.getElementById('edit-overlay').style.display = 'none';
+    }
+
+    function editSwitchTab(type) {
+      editTab = type;
+      editRenderAll();
+    }
+    function editRenderAll() {
+      const expBtn = document.getElementById('edit-tab-expense');
+      const incBtn = document.getElementById('edit-tab-income');
+      expBtn.className = 'flex-1 py-2 rounded-full text-label-lg transition-all ' +
+        (editTab === 'expense' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface');
+      incBtn.className = 'flex-1 py-2 rounded-full text-label-lg transition-all ' +
+        (editTab === 'income' ? 'bg-secondary text-on-secondary shadow-sm' : 'text-on-surface-variant hover:text-on-surface');
+      document.getElementById('edit-currency').className = 'text-headline-lg font-headline-lg ' +
+        (editTab === 'expense' ? 'text-primary' : 'text-secondary');
+      document.getElementById('edit-acct-label').textContent = editTab === 'expense' ? '账户' : '收款账户';
+      document.getElementById('edit-note').placeholder = editTab === 'expense' ? '这笔钱花在哪里了？' : '这笔钱从哪儿来呀？';
+      editRenderCats();
+      editRenderAccounts();
+    }
+    function editRenderCats() {
+      const grid = document.getElementById('edit-category-grid');
+      const arr = editCats[editTab] || [];
+      grid.innerHTML = '';
+      if (!arr.length) {
+        grid.innerHTML = '<div class="col-span-3 text-center text-body-md text-on-surface-variant py-8">暂无分类</div>';
+        return;
+      }
+      arr.forEach(function (c, i) {
+        const on = i === editCatSel[editTab];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-all border-2 ' +
+          (on ? (editTab === 'expense' ? 'border-primary' : 'border-secondary') : 'border-transparent');
+        const circ = on
+          ? (editTab === 'expense' ? 'bg-primary-container/30 text-on-primary-container' : 'bg-secondary-container/60 text-on-secondary-container')
+          : 'bg-surface-container text-on-surface-variant';
+        btn.innerHTML = '<div class="w-12 h-12 rounded-full flex items-center justify-center mb-space-sm ' + circ + '"><span class="text-2xl leading-none">' + esc(c.icon) + '</span></div>' +
+          '<span class="text-body-md font-medium text-on-surface">' + esc(c.name) + '</span>';
+        btn.onclick = function () { editSelectCategory(i); };
+        grid.appendChild(btn);
+      });
+    }
+    function editSelectCategory(i) {
+      editCatSel[editTab] = i;
+      editRenderCats();
+    }
+    function editRenderAccounts() {
+      const wrap = document.getElementById('edit-acct-grid');
+      wrap.innerHTML = '';
+      if (!editAccounts.length) {
+        wrap.innerHTML = '<span class="text-body-sm text-on-surface-variant">暂无账户</span>';
+        return;
+      }
+      editAccounts.forEach(function (a) {
+        const on = a.id === editAcctSelId;
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'px-space-md py-2 rounded-full text-body-sm font-medium transition-all ' +
+          (on ? (editTab === 'expense' ? 'bg-primary text-on-primary shadow-xs' : 'bg-secondary text-on-secondary shadow-xs') : 'bg-surface-container text-on-surface-variant');
+        b.innerHTML = '<span class="mr-1">' + esc(a.emoji) + '</span>' + esc(a.name);
+        b.onclick = function () { editAcctSelId = on ? null : a.id; editRenderAccounts(); };
+        wrap.appendChild(b);
+      });
+    }
+
+    async function submitEdit() {
+      if (!currentBill) return;
+      const cents = yuanToCents(document.getElementById('edit-amount').value);
+      if (cents == null) { alert('请输入有效金额（最多两位小数）'); return; }
+      const arr = editCats[editTab] || [];
+      const ci = editCatSel[editTab];
+      if (ci < 0 || ci >= arr.length || !arr[ci]) { alert('请先选择分类'); return; }
+      const billDate = document.getElementById('edit-date').value;
+      if (!billDate) { alert('请选择日期'); return; }
+      const payload = {
+        type: editTab,
+        amount: cents,
+        categoryId: arr[ci].id,
+        accountId: editAcctSelId,
+        note: (document.getElementById('edit-note').value || '').trim() || null,
+        billDate: billDate
+      };
+      const btn = document.getElementById('edit-save-btn');
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/bills/' + currentBill.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await r.json().catch(function () { return {}; });
+        if (!r.ok) { alert(data.message || '保存失败，请重试'); return; }
+        closeEdit();
+        closeDetailModal();
+        reloadAll();
+      } catch (e) {
+        alert('网络异常，请稍后再试');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function confirmDelete() {
+      if (!currentBill) return;
+      document.getElementById('delete-confirm-modal').classList.remove('hidden');
+      document.getElementById('delete-confirm-modal').classList.add('flex');
+    }
+    function closeDeleteConfirm() {
+      document.getElementById('delete-confirm-modal').classList.add('hidden');
+      document.getElementById('delete-confirm-modal').classList.remove('flex');
+    }
+    async function doDelete() {
+      if (!currentBill) return;
+      const btn = document.getElementById('confirm-delete-btn');
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/bills/' + currentBill.id, { method: 'DELETE' });
+        const data = await r.json().catch(function () { return {}; });
+        if (!r.ok) { alert(data.message || '删除失败，请重试'); return; }
+        closeDeleteConfirm();
+        closeDetailModal();
+        reloadAll();
+      } catch (e) {
+        alert('网络异常，请稍后再试');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function reloadAll() {
+      offset = 0;
+      total = 0;
+      hasMore = true;
+      lastDate = null;
+      summary = { income: 0, expense: 0, balance: 0 };
+      month = '';
+      dayMap = new Map();
+      const list = document.getElementById('bill-list');
+      list.innerHTML = '';
+      list.classList.remove('hidden');
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('empty-state').classList.remove('flex');
+      document.getElementById('list-end').classList.add('hidden');
+      document.getElementById('list-end').classList.remove('flex');
+      loadMore();
+    }
+
+    /* —— 导出数据：把当前月份统计 + 收支明细整合为 Excel(.xlsx) 下载 —— */
+    // 绕过前端滚动分页，循环拉取整月全部账单（含收入与支出，每页最多 100 条）
+    async function fetchAllBillsForExport() {
+      const pageSize = 100;
+      const all = [];
+      let off = 0;
+      for (;;) {
+        const r = await fetch('/api/bills?month=' + viewMonth + '&offset=' + off + '&limit=' + pageSize);
+        if (r.status === 401) { location.replace('02_login.html'); throw new Error('unauth'); }
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.message || '加载失败');
+        const items = data.bills || [];
+        all.push.apply(all, items);
+        off += items.length;
+        if (items.length === 0 || off >= (data.total || 0)) break;
+      }
+      return all;
+    }
+    function signedYuan(c) {
+      return (c < 0 ? '-' : '') + centsToYuan(Math.abs(c));
+    }
+    function buildExportRows(bills) {
+      const prefix = viewMonth === nowYM() ? '本月' : (parseInt(viewMonth.slice(5, 7), 10) + '月');
+      const rows = [
+        ['财务管家 账单流水'],
+        ['月份', month || viewMonth],
+        [],
+        [prefix + '结余(元)', signedYuan(summary.balance || 0)],
+        [prefix + '支出(元)', centsToYuan(summary.expense || 0)],
+        [prefix + '收入(元)', centsToYuan(summary.income || 0)],
+        [],
+        ['日期', '类型', '分类', '金额(元)', '账户', '备注', '时间'],
+      ];
+      bills.forEach(function (b) {
+        rows.push([
+          b.billDate,
+          b.type === 'income' ? '收入' : '支出',
+          b.categoryName || '',
+          (b.type === 'income' ? '+' : '-') + centsToYuan(b.amount),
+          b.accountName || '—',
+          b.note || '',
+          b.createdTime || '',
+        ]);
+      });
+      return rows;
+    }
+    async function exportData() {
+      if (typeof XLSX === 'undefined') {
+        showExportToast('导出组件未加载，请联网后重试');
+        return;
+      }
+      const btn = document.getElementById('export-btn');
+      if (btn) btn.disabled = true;
+      try {
+        const bills = await fetchAllBillsForExport();
+        const rows = buildExportRows(bills);
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols'] = [{ wch: 12 }, { wch: 8 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 24 }, { wch: 8 }];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '账单流水');
+        const name = '财务管家-账单流水-' + viewMonth + '.xlsx';
+        XLSX.writeFile(wb, name);
+        showExportToast('已导出 ' + name);
+      } catch (e) {
+        showExportToast('导出失败，请稍后重试');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+    function showExportToast(text) {
+      const toast = document.getElementById('export-toast');
+      document.getElementById('export-toast-text').textContent = text;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      clearTimeout(showExportToast._t);
+      showExportToast._t = setTimeout(function () {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 2200);
+    }
 
     loadMore();
   </script>
@@ -409,4 +859,22 @@
 </a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="stats" href="#"><span class="material-symbols-outlined">bar_chart</span><span class="text-label-sm">统计</span></a><a class="flex flex-col items-center justify-center gap-space-xs w-16 h-16 text-on-surface-variant hover:text-on-surface transition-all" data-path="profile" href="#"><span class="material-symbols-outlined">account_circle</span><span class="text-label-sm">我的</span></a></div></nav>
 <!-- proto-nav -->
 <script src="../assets/proto-nav.js?v=20261020-2" data-page="06_transaction_history"></script>
+<script>
+    // 图标字体就绪后再显示图标；此处内联脚本会等 head 里的字体样式表加载完才执行，3 秒超时兜底
+    (function () {
+      var ready = false;
+      function once() {
+        if (ready) return;
+        ready = true;
+        document.documentElement.classList.remove('icons-loading');
+      }
+      try {
+        document.fonts.load('20px "Material Symbols Outlined"').then(once, once);
+      } catch (e) {
+        once();
+        return;
+      }
+      setTimeout(once, 3000);
+    })();
+  </script>
 </body></html>

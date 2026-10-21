@@ -1,7 +1,7 @@
 /* 财务管家 · 原型共享脚本：按 PRD 流程的按钮接线
    由 inject_nav.py 在每页 </body> 前注入引用：
    <script src="../assets/proto-nav.js" data-page="02_register"></script>
-   12 张页面全部平铺在 pages/ 下（02_login.html … 13_category_manage.html，无 04——场景引导页已删），
+   11 张页面全部平铺在 pages/ 下（02_login.html … 13_category_manage.html，无 04 场景引导页与 09 账单详情页——均已删），
    **默认首页为 pages/02_login.html**（登录页）；02_register 为注册页，两页分立（PRD F1）；
    12/13 为「我的」页延伸的账户/分类管理页（原型扩展，非 PRD V1 范围）。
    原「悬浮 🧭 导航」按钮及其面板已于 2026-10-19 删除。 */
@@ -12,9 +12,9 @@
 
   /* 接线规则：[匹配文本, 匹配方式 exact|contains, 目标目录]，靠前的优先。
      关键词均取自各页真实按钮文字（2026-10-18 全量核对）。
-     注意：登录/注册提交键（开启记账之旅 / 加入财务小窝）已改由各页内联脚本调用
-     后端 /api/auth/*（003.前端代码/backend），校验通过、登录态建立后才跳 05_add_record，
-     故不再在此直跳（2026-10-20 正式接线）。 */
+     注意：登录/注册/找回密码提交键（开启记账之旅 / 加入财务小窝 / 重置密码并登录）已改由
+     各页内联脚本调用后端 /api/auth/*（003.前端代码/backend），校验通过、登录态建立后才跳
+     05_add_record，故不再在此直跳（登录/注册 2026-10-20 接线，找回密码 2026-10-21 接线）。 */
   var RULES = {
     '02_login': [
       ['忘记密码', 'contains', '03_forgot_password'],
@@ -23,23 +23,15 @@
     '02_register': [
       ['直接登录', 'contains', '02_login']           /* 已有账号？直接登录 → 登录页 */
     ],
-    '03_forgot_password': [
-      ['重置密码并登录', 'contains', '02_login'], /* 重设完成回登录页（PRD F1-5） */
-      ['返回登录', 'contains', '02_login'],
-      ['去登录', 'contains', '02_login'],
-      ['完成', 'contains', '02_login']
-    ],
     '05_add_record': [
-      ['月度统计', 'contains', '07_statistics_a'],
+      ['年度统计', 'contains', '07_statistics_a'],
       ['统计', 'exact', '07_statistics_a'],
       ['流水', 'exact', '06_transaction_history'],
       ['我的', 'exact', '10_profile']
     ],
     '06_transaction_history': [
-      ['月度统计', 'contains', '07_statistics_a'],
+      ['年度统计', 'contains', '07_statistics_a'],
       ['统计', 'exact', '07_statistics_a'],
-      ['编辑', 'exact', '09_bill_detail'],
-      ['详情', 'contains', '09_bill_detail'],
       ['记一笔账', 'exact', '05_add_record'],
       ['记一笔', 'exact', '05_add_record'],
       ['流水', 'exact', '06_transaction_history'],
@@ -56,16 +48,6 @@
       ['记一笔', 'exact', '05_add_record'],
       ['我的', 'exact', '10_profile'],
       ['返回', 'contains', '06_transaction_history']
-    ],
-    '09_bill_detail': [
-      ['确认删除', 'contains', '06_transaction_history'],
-      ['返回流水', 'contains', '06_transaction_history'],
-      ['删除', 'contains', '06_transaction_history'], /* 匹配「删除账单」 */
-      ['编辑', 'contains', '05_add_record'], /* 匹配「编辑这笔账单」 */
-      ['记一笔', 'exact', '05_add_record'],
-      ['流水', 'exact', '06_transaction_history'],
-      ['统计', 'exact', '07_statistics_a'],
-      ['我的', 'exact', '10_profile']
     ],
     '10_profile': [
       ['账户管理', 'contains', '12_account_manage'],

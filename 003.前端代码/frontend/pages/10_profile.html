@@ -40,7 +40,17 @@
     .custom-card-shadow {
       box-shadow: 0 4px 16px rgba(255, 143, 171, 0.12);
     }
-  </style></head><body class="bg-[#FFF4F7] font-body text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-[#FFF4F7]/90 backdrop-blur-md pt-safe border-b border-[#F7E5EB]"><div class="h-14 px-5 flex items-center justify-between"><div class="flex items-center gap-2.5"><img alt="财务管家 Logo" class="h-7 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"/><span class="text-[17px] font-bold text-on-surface">个人中心</span></div><button class="w-8 h-8 rounded-full bg-[#FFE5EC] flex items-center justify-center text-primary active:scale-95 transition-all"><span class="material-symbols-outlined text-[19px]">notifications</span></button></div></header><main class="flex flex-col relative w-full px-4 pt-16 flex-1 pb-28"><div class="flex flex-col w-full pt-4 pb-6">
+    /* 图标字体（Material Symbols 连字）就绪前先隐藏，避免刷新时闪现英文图标名；JS 禁用时不加类、不受影响 */
+    html.icons-loading .material-symbols-outlined {
+      visibility: hidden;
+    }
+    /* 刷新防闪现：后端数据填充前隐藏昵称/徽章/三项统计，避免先渲染演示数据再被覆盖 */
+    html.profile-filling .js-fill {
+      visibility: hidden;
+    }
+  </style>
+  <script>document.documentElement.classList.add('icons-loading','profile-filling');</script>
+</head><body class="bg-[#FFF4F7] font-body text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-[#FFF4F7]/90 backdrop-blur-md pt-safe border-b border-[#F7E5EB]"><div class="h-14 px-5 flex items-center justify-between"><div class="flex items-center gap-2.5"><img alt="财务管家 Logo" class="h-7 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"/><span class="text-[17px] font-bold text-on-surface">个人中心</span></div><button class="w-8 h-8 rounded-full bg-[#FFE5EC] flex items-center justify-center text-primary active:scale-95 transition-all"><span class="material-symbols-outlined text-[19px]">notifications</span></button></div></header><main class="flex flex-col relative w-full px-4 pt-16 flex-1 pb-28"><div class="flex flex-col w-full pt-4 pb-6">
 <!-- 1. 顶部个人资料区 -->
 <div class="flex flex-col items-center text-center mb-5">
 <div class="relative mb-2.5">
@@ -53,10 +63,10 @@
 <span class="material-symbols-outlined text-[12px] block">photo_camera</span>
 </div>
 </div>
-<h2 class="text-lg font-bold text-on-surface tracking-tight mb-1" id="profile-name"><span id="profile-username">小桃子酱</span> <span class="text-xs font-normal text-on-surface-variant" id="profile-reg"></span></h2>
+<h2 class="text-lg font-bold text-on-surface tracking-tight mb-1" id="profile-name"><span class="js-fill" id="profile-username">小桃子酱</span> <span class="text-xs font-normal text-on-surface-variant" id="profile-reg"></span></h2>
 <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#FFEBF0] text-primary text-xs font-medium">
 <span class="material-symbols-outlined text-[13px]">military_tech</span>
-<span id="profile-badge">已坚持记账 48 天 · UID: 20491</span>
+<span class="js-fill" id="profile-badge">已坚持记账 48 天 · UID: 20491</span>
 </div>
 </div>
 <!-- 数据概览卡片（3项对齐微卡） -->
@@ -64,21 +74,21 @@
 <div class="bg-[#FFFBFC] custom-card-shadow rounded-2xl p-3 flex flex-col items-center justify-center border border-[#FFF0F4]">
 <span class="text-xs text-on-surface-variant mb-1 font-medium">累计记账</span>
 <div class="flex items-baseline gap-0.5">
-<span class="text-lg font-bold text-primary font-headline" id="stat-total">128</span>
+<span class="text-lg font-bold text-primary font-headline js-fill" id="stat-total">128</span>
 <span class="text-[11px] text-on-surface-variant font-normal">笔</span>
 </div>
 </div>
 <div class="bg-[#FFFBFC] custom-card-shadow rounded-2xl p-3 flex flex-col items-center justify-center border border-[#FFF0F4]">
 <span class="text-xs text-on-surface-variant mb-1 font-medium">记账天数</span>
 <div class="flex items-baseline gap-0.5">
-<span class="text-lg font-bold text-primary font-headline" id="stat-days">48</span>
+<span class="text-lg font-bold text-primary font-headline js-fill" id="stat-days">48</span>
 <span class="text-[11px] text-on-surface-variant font-normal">天</span>
 </div>
 </div>
 <div class="bg-[#FFFBFC] custom-card-shadow rounded-2xl p-3 flex flex-col items-center justify-center border border-[#FFF0F4]">
 <span class="text-xs text-on-surface-variant mb-1 font-medium">本月记账</span>
 <div class="flex items-baseline gap-0.5">
-<span class="text-lg font-bold text-primary font-headline" id="stat-month">26</span>
+<span class="text-lg font-bold text-primary font-headline js-fill" id="stat-month">26</span>
 <span class="text-[11px] text-on-surface-variant font-normal">笔</span>
 </div>
 </div>
@@ -176,31 +186,44 @@
       ev.target.value = '';   // 允许再次选择同一张图
     }
 
+    /* 刷新防闪现：head 里已给 <html> 加 profile-filling 隐藏待填充字段，两个异步请求各自完成后
+       计数，全部结束（成功或回落）才移除类、显示结果；纯原型预览无后端时同样走回落并显示演示值。 */
+    var profileFills = 2;
+    function fillDone() {
+      if (--profileFills <= 0) {
+        document.documentElement.classList.remove('profile-filling');
+      }
+    }
+
     /* 正式接线：昵称、注册时间、头像取自当前登录用户（/api/auth/me → user 表）；
        未登录或后端不可用时保留演示名「小桃子酱」（纯原型预览兼容） */
     (function fillProfile() {
       fetch('/api/auth/me').then(function (r) { return r.ok ? r.json() : null; }).then(function (me) {
-        if (!me) return;
-        document.getElementById('profile-username').textContent = me.username;
-        if (me.registeredAt) {
-          document.getElementById('profile-reg').textContent = '注册于 ' + me.registeredAt;
+        if (me) {
+          document.getElementById('profile-username').textContent = me.username;
+          if (me.registeredAt) {
+            document.getElementById('profile-reg').textContent = '注册于 ' + me.registeredAt;
+          }
+          if (me.id && me.joinedDays) {
+            document.getElementById('profile-badge').textContent =
+              '已坚持记账 ' + me.joinedDays + ' 天 · UID: ' + me.id;
+          }
+          setAvatar(me.avatarUrl || '');
         }
-        if (me.id && me.joinedDays) {
-          document.getElementById('profile-badge').textContent =
-            '已坚持记账 ' + me.joinedDays + ' 天 · UID: ' + me.id;
-        }
-        setAvatar(me.avatarUrl || '');
-      }).catch(function () { /* 纯原型预览无后端，忽略 */ });
+        fillDone();
+      }).catch(function () { fillDone(); });
     })();
 
     /* 记账统计：累计记账 / 记账天数 / 本月记账（/api/profile/stats → bill 表实时聚合） */
     (function fillStats() {
       fetch('/api/profile/stats').then(function (r) { return r.ok ? r.json() : null; }).then(function (s) {
-        if (!s) return;
-        document.getElementById('stat-total').textContent = s.totalCount;
-        document.getElementById('stat-days').textContent = s.daysCount;
-        document.getElementById('stat-month').textContent = s.monthCount;
-      }).catch(function () { /* 无后端时保留演示数字 */ });
+        if (s) {
+          document.getElementById('stat-total').textContent = s.totalCount;
+          document.getElementById('stat-days').textContent = s.daysCount;
+          document.getElementById('stat-month').textContent = s.monthCount;
+        }
+        fillDone();
+      }).catch(function () { fillDone(); });
     })();
 
     function showLogoutModal() {
@@ -271,4 +294,22 @@
 <nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-[#FFFBFC]/95 backdrop-blur-xl border-t border-[#F7E5EB] shadow-[0_-2px_12px_rgba(255,143,171,0.08)]"><div class="flex justify-around items-center h-16 px-2"><a class="flex flex-col items-center justify-center gap-1 w-14 h-14 text-on-surface-variant hover:text-primary transition-all" data-path="flow" href="#"><span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="text-[11px] font-medium">流水</span></a><a class="flex flex-col items-center justify-center -mt-4 text-on-surface-variant transition-all" data-path="add" href="#"><div class="w-12 h-12 rounded-full bg-gradient-to-tr from-[#9b3f5a] to-[#FF8FAB] flex items-center justify-center text-white shadow-[0_4px_12px_rgba(255,143,171,0.4)] active:scale-95 transition-transform"><span class="material-symbols-outlined text-[24px]">add</span></div><span class="text-[11px] font-medium mt-1">记一笔</span></a><a class="flex flex-col items-center justify-center gap-1 w-14 h-14 text-on-surface-variant hover:text-primary transition-all" data-path="stats" href="#"><span class="material-symbols-outlined text-[22px]">bar_chart</span><span class="text-[11px] font-medium">统计</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-14 h-14 transition-all text-[#FF8FAB] font-bold" data-path="profile" href="#"><span class="material-symbols-outlined text-[22px] font-variation-settings-'FILL'-1">account_circle</span><span class="text-[11px]">我的</span></a></div></nav>
 <!-- proto-nav -->
 <script src="../assets/proto-nav.js?v=20261020-2" data-page="10_profile"></script>
+<script>
+    // 图标字体就绪后再显示图标；此处内联脚本会等 head 里的字体样式表加载完才执行，3 秒超时兜底
+    (function () {
+      var ready = false;
+      function once() {
+        if (ready) return;
+        ready = true;
+        document.documentElement.classList.remove('icons-loading');
+      }
+      try {
+        document.fonts.load('20px "Material Symbols Outlined"').then(once, once);
+      } catch (e) {
+        once();
+        return;
+      }
+      setTimeout(once, 3000);
+    })();
+  </script>
 </body></html>

@@ -103,7 +103,12 @@
     }
     .animate-fade-in { animation: proto-fade-in 0.18s ease-out; }
     .material-symbols-outlined { user-select: none; }
+    /* 图标字体（Material Symbols 连字）就绪前先隐藏，避免刷新时闪现英文图标名；JS 禁用时不加类、不受影响 */
+    html.icons-loading .material-symbols-outlined {
+      visibility: hidden;
+    }
   </style>
+  <script>document.documentElement.classList.add('icons-loading');</script>
   </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><button aria-label="返回" class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed transition-all active:scale-95" onclick="location.href='10_profile.html'" type="button"><span class="material-symbols-outlined">arrow_back</span></button><span class="font-headline-md text-headline-md text-on-surface">账户管理</span><div class="w-10"></div></div></header><main class="flex flex-col relative w-full px-gutter pt-16 pb-24 bg-[#FFF4F7] flex-1"><div class="flex flex-col w-full py-space-md gap-space-md">
 <!-- 账户说明 -->
 <div class="flex items-center gap-space-xs px-space-xs text-body-sm text-outline">
@@ -300,4 +305,22 @@
 </div></main>
 <!-- proto-nav -->
 <script src="../assets/proto-nav.js?v=20261020-2" data-page="12_account_manage"></script>
+<script>
+    // 图标字体就绪后再显示图标；此处内联脚本会等 head 里的字体样式表加载完才执行，3 秒超时兜底
+    (function () {
+      var ready = false;
+      function once() {
+        if (ready) return;
+        ready = true;
+        document.documentElement.classList.remove('icons-loading');
+      }
+      try {
+        document.fonts.load('20px "Material Symbols Outlined"').then(once, once);
+      } catch (e) {
+        once();
+        return;
+      }
+      setTimeout(once, 3000);
+    })();
+  </script>
 </body></html>
