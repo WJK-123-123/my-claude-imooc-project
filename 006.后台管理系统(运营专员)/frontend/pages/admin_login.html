@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 · 财务管家后台管理系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#FFF4F7] flex items-center justify-center">
+  <div class="bg-white w-full max-w-sm rounded-3xl shadow-[0_4px_12px_rgba(255,143,171,0.16)] p-8">
+    <h1 class="text-2xl font-bold text-center text-[#4A4A4A] mb-1">财务管家</h1>
+    <p class="text-center text-[#999999] text-sm mb-6">后台管理系统</p>
+
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block text-sm text-[#4A4A4A] mb-1" for="username">用户名</label>
+        <input id="username" name="username" type="text" autocomplete="username" required
+          class="w-full h-11 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB]" />
+      </div>
+      <div>
+        <label class="block text-sm text-[#4A4A4A] mb-1" for="password">密码</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required
+          class="w-full h-11 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB]" />
+      </div>
+      <p id="error" class="text-sm text-[#FF6B6B] hidden"></p>
+      <button id="submitBtn" type="submit"
+        class="w-full h-12 rounded-full bg-gradient-to-b from-[#FFB6C8] to-[#FF8FAB] text-white font-semibold active:scale-[0.97] transition">
+        登录
+      </button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorEl = document.getElementById('error');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.classList.add('hidden');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '登录中…';
+      try {
+        const res = await fetch('/api/admin/auth/login', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('username').value.trim(),
+            password: document.getElementById('password').value,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          location.href = '/pages/admin_home.html';
+        } else {
+          errorEl.textContent = data.message || '登录失败，请重试';
+          errorEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorEl.textContent = '网络异常，请稍后再试';
+        errorEl.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '登录';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数据总览 · 财务管家后台管理系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/assets/chart.umd.js"></script>
+</head>
+<body class="bg-[#FFF4F7] text-[#4A4A4A]" data-page="dashboard">
+  <div class="flex min-h-screen">
+    <!-- 左侧导航 -->
+    <aside class="w-56 fixed inset-y-0 left-0 bg-white border-r border-[#FFD6E3] flex flex-col z-10">
+      <div class="h-16 flex items-center gap-2 px-5 border-b border-[#FFD6E3]">
+        <span class="text-xl">🌸</span>
+        <div>
+          <div class="font-bold leading-tight">财务管家</div>
+          <div class="text-[11px] text-[#999999] leading-tight">后台管理系统</div>
+        </div>
+      </div>
+      <nav class="flex-1 px-3 py-4 space-y-1">
+        <a href="/pages/admin_home.html" class="block px-4 py-2.5 rounded-xl bg-[#FFE4EC] text-[#FF8FAB] font-semibold text-sm">📊 仪表盘</a>
+        <a href="/pages/admin_users.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">👥 用户</a>
+        <a href="/pages/admin_bills.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">🧾 账单</a>
+        <a href="/pages/admin_stats.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">📈 统计</a>
+      </nav>
+      <div class="px-5 py-4 border-t border-[#FFD6E3] text-xs text-[#999999]">只读运营后台 · V1</div>
+    </aside>
+
+    <!-- 右侧内容 -->
+    <div class="flex-1 ml-56 min-w-0">
+      <header class="h-16 bg-white border-b border-[#FFD6E3] sticky top-0 z-10 flex items-center justify-between px-6">
+        <h1 class="text-lg font-bold">数据总览</h1>
+        <div class="flex items-center gap-4">
+          <span id="adminName" class="text-sm text-[#999999]">加载中…</span>
+          <button onclick="doAdminLogout()" class="text-sm text-[#FF6B6B] hover:underline">退出登录</button>
+        </div>
+      </header>
+
+      <main class="p-6 max-w-[1200px]">
+        <p id="error" class="hidden mb-4 px-4 py-3 rounded-xl bg-[#FFDAD6] text-[#93000A] text-sm"></p>
+
+        <!-- 核心指标卡（后台 PRD A2-1） -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="metricCards"></div>
+
+        <!-- 活跃口径（后台 PRD A2-2） -->
+        <div class="grid grid-cols-2 gap-4 mt-4" id="activeCards"></div>
+
+        <!-- 近 30 天趋势（后台 PRD A2-3） -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5 md:col-span-2">
+            <h2 class="font-bold mb-4">用户注册趋势 · 近 30 天</h2>
+            <div class="h-64"><canvas id="chartReg"></canvas></div>
+          </div>
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5">
+            <h2 class="font-bold mb-4">记账活跃趋势 · 近 30 天</h2>
+            <div class="h-64"><canvas id="chartBill"></canvas></div>
+          </div>
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5">
+            <h2 class="font-bold mb-4">收支趋势 · 近 30 天</h2>
+            <div class="h-64"><canvas id="chartFlow"></canvas></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/admin-nav.js"></script>
+  <script>
+    (async () => {
+      const errEl = document.getElementById('error');
+      const showErr = (m) => { errEl.textContent = m; errEl.classList.remove('hidden'); };
+
+      let data;
+      try {
+        data = await adminApi('/api/admin/dashboard');
+      } catch (e) {
+        showErr(e.message);
+        return;
+      }
+
+      // 核心指标卡：金额展示为「元、两位小数」，结余可负
+      const m = data.metrics;
+      const cards = [
+        { label: '累计注册用户', value: String(m.userCount), unit: '人', href: '/pages/admin_users.html' },
+        { label: '累计账单笔数', value: String(m.billCount), unit: '笔', href: '/pages/admin_bills.html' },
+        { label: '累计支出', value: centsToYuan(m.expenseTotal), unit: '元', href: '/pages/admin_bills.html' },
+        { label: '累计收入', value: centsToYuan(m.incomeTotal), unit: '元', href: '/pages/admin_bills.html' },
+        { label: '累计结余', value: centsToYuanSigned(m.balance), unit: '元', href: '/pages/admin_bills.html', sign: m.balance < 0 ? 'text-[#FF6B6B]' : 'text-[#35C3A1]' },
+      ];
+      document.getElementById('metricCards').innerHTML = cards.map((c) => `
+        <a href="${c.href}" class="block bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5 hover:-translate-y-0.5 transition">
+          <div class="text-sm text-[#999999] mb-2">${c.label}</div>
+          <div class="text-2xl font-bold ${c.sign || ''}">${c.value}<span class="text-sm font-normal text-[#999999] ml-1">${c.unit}</span></div>
+        </a>`).join('');
+
+      const a = data.active;
+      document.getElementById('activeCards').innerHTML = `
+        <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5">
+          <div class="text-sm text-[#999999] mb-2">近 30 天登录用户</div>
+          <div class="text-2xl font-bold">${a.loginLast30d}<span class="text-sm font-normal text-[#999999] ml-1">人</span></div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5">
+          <div class="text-sm text-[#999999] mb-2">近 30 天记账用户</div>
+          <div class="text-2xl font-bold">${a.billLast30d}<span class="text-sm font-normal text-[#999999] ml-1">人</span></div>
+        </div>`;
+
+      const t = data.trends;
+      const labels = t.days.map((d) => d.slice(5)); // YYYY-MM-DD → MM-DD
+
+      const baseGrid = { color: '#FFD6E3' };
+      const baseTicks = { color: '#999999', font: { size: 11 } };
+      const mkLine = (color) => ({ backgroundColor: color, borderColor: color, fill: false, tension: 0.3, pointRadius: 2, borderWidth: 2 });
+
+      // 注册趋势：每日新增（柱，左轴）+ 累计注册（线，右轴）
+      new Chart(document.getElementById('chartReg'), {
+        data: {
+          labels,
+          datasets: [
+            { type: 'bar', label: '每日新增', data: t.registrations, backgroundColor: '#FFB6C8', borderRadius: 4, yAxisID: 'y' },
+            { type: 'line', label: '累计注册', data: t.cumulativeRegistrations, ...mkLine('#FF8FAB'), yAxisID: 'y1' },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+          scales: {
+            y: { beginAtZero: true, grid: baseGrid, ticks: baseTicks, title: { display: true, text: '每日新增', color: '#999999' } },
+            y1: { beginAtZero: true, position: 'right', grid: { display: false }, ticks: baseTicks },
+            x: { grid: { display: false }, ticks: baseTicks },
+          },
+          plugins: { legend: { labels: { color: '#4A4A4A', boxWidth: 12 } } },
+        },
+      });
+
+      // 记账活跃趋势：每日账单笔数（柱）
+      new Chart(document.getElementById('chartBill'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: '账单笔数', data: t.billCounts, backgroundColor: '#FF8FAB', borderRadius: 4 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true, grid: baseGrid, ticks: baseTicks }, x: { grid: { display: false }, ticks: baseTicks } },
+          plugins: { legend: { display: false } },
+        },
+      });
+
+      // 收支趋势：支出（深灰）+ 收入（薄荷绿），单位为分→元在 tooltip 展示
+      new Chart(document.getElementById('chartFlow'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: '支出', data: t.expenses, ...mkLine('#4A4A4A') },
+            { label: '收入', data: t.incomes, ...mkLine('#35C3A1') },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+          scales: { y: { beginAtZero: true, grid: baseGrid, ticks: baseTicks }, x: { grid: { display: false }, ticks: baseTicks } },
+          plugins: {
+            legend: { labels: { color: '#4A4A4A', boxWidth: 12 } },
+            tooltip: {
+              callbacks: { label: (ctx) => `${ctx.dataset.label}：¥${centsToYuan(ctx.parsed.y)}` },
+            },
+          },
+        },
+      });
+    })();
+  </script>
+</body>
+</html>

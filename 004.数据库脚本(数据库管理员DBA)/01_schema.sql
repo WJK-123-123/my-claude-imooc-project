@@ -8,6 +8,7 @@
 -- 存储引擎 : InnoDB（事务、外键、行锁）
 -- 设计依据 : 《财务管家-PRD-V1.0.md》V1.6（F1–F7、§7 数据模型、附录 A 模板）
 --            003 原型 05/09/10/12/13 页数据结构
+--            admin_user 表来自《后台管理系统-PRD-V1.0.md》V1.1（A1 超级管理员，全系统仅此一张新增表）
 -- 硬约定   : 金额一律以「分」为单位的整数存储，全程禁用浮点（PRD 6.5 前的架构约定）
 -- 说明     : 本脚本可重复执行（先 DROP 再 CREATE），会清空既有数据，请勿在生产库直接运行
 -- =====================================================================================
@@ -21,7 +22,7 @@ CREATE DATABASE IF NOT EXISTS `financial_steward`
 
 USE `financial_steward`;
 
--- 依依赖关系倒序清理（模板 → 业务表 → 账号体系）
+-- 依依赖关系倒序清理（模板 → 业务表 → 账号体系；admin_user 独立无外键，随账号体系一并清）
 DROP TABLE IF EXISTS `bill`;
 DROP TABLE IF EXISTS `category`;
 DROP TABLE IF EXISTS `account`;
@@ -30,6 +31,7 @@ DROP TABLE IF EXISTS `account_template`;
 DROP TABLE IF EXISTS `password_reset_code`;
 DROP TABLE IF EXISTS `user_session`;
 DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `admin_user`;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -234,3 +236,32 @@ CREATE TABLE `bill` (
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
   COMMENT = '账单流水表（核心）：金额以分存储（PRD F3/F4/F5/F7）';
+
+-- =====================================================================================
+-- 表 9：admin_user —— 后台管理系统超级管理员账号（后台管理系统 PRD V1.1 · A1）
+-- -------------------------------------------------------------------------------------
+-- · 与用户端 user 表完全隔离：超级管理员与普通用户分属两表，登录互不通行
+-- · 账号与会话合一：登录令牌明文只存 Cookie，库中仅存其 SHA-256 哈希（token_hash），
+--   全系统不另建 admin_session 表（后台 PRD V1.1「全系统仅此一张新增表」硬约束）
+-- · 账号由开发预置（种子脚本/环境变量），不开放自助注册；每账号同一时间仅保留一个有效会话
+--   （后登录覆盖先登录，token_hash 单行存一）
+-- · failed_login_count / locked_until 沿用用户端 F1-3「连错 5 次锁定 10 分钟」策略
+-- =====================================================================================
+CREATE TABLE `admin_user` (
+  `id`                 BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '超级管理员 ID（主键）',
+  `username`           VARCHAR(20)     NOT NULL COMMENT '超级管理员用户名（2–20 字符；独立于 user 表，不与其混用）',
+  `password_hash`      VARCHAR(255)    NOT NULL COMMENT '密码哈希（bcrypt/argon2 编码串，内含盐）',
+  `token_hash`         CHAR(64)        NULL COMMENT '当前登录会话令牌的 SHA-256 哈希（64 位十六进制；令牌明文只在 Cookie；NULL=未登录）',
+  `token_expires_at`   DATETIME        NULL COMMENT '会话过期时间（30 天滑动续期；NULL=无有效会话）',
+  `failed_login_count` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '连续登录失败次数（成功登录后清零；≥5 触发锁定，同 F1-3）',
+  `locked_until`       DATETIME        NULL COMMENT '登录锁定截止时间（锁定期间即使密码正确也拒绝登录）',
+  `last_login_at`      DATETIME        NULL COMMENT '最近一次登录成功时间',
+  `created_at`         DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '账号创建时间',
+  `updated_at`         DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '行更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_admin_username` (`username`),
+  KEY `idx_admin_token` (`token_hash`),
+  CONSTRAINT `chk_admin_username_len` CHECK (CHAR_LENGTH(`username`) BETWEEN 2 AND 20)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
+  COMMENT = '后台管理系统超级管理员账号表：账号与会话合一，与用户端 user 表完全隔离（后台 PRD A1）';

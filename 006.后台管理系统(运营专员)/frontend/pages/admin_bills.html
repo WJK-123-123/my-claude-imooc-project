@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>账单流水 · 财务管家后台管理系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#FFF4F7] text-[#4A4A4A]" data-page="bills">
+  <div class="flex min-h-screen">
+    <aside class="w-56 fixed inset-y-0 left-0 bg-white border-r border-[#FFD6E3] flex flex-col z-10">
+      <div class="h-16 flex items-center gap-2 px-5 border-b border-[#FFD6E3]">
+        <span class="text-xl">🌸</span>
+        <div>
+          <div class="font-bold leading-tight">财务管家</div>
+          <div class="text-[11px] text-[#999999] leading-tight">后台管理系统</div>
+        </div>
+      </div>
+      <nav class="flex-1 px-3 py-4 space-y-1">
+        <a href="/pages/admin_home.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">📊 仪表盘</a>
+        <a href="/pages/admin_users.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">👥 用户</a>
+        <a href="/pages/admin_bills.html" class="block px-4 py-2.5 rounded-xl bg-[#FFE4EC] text-[#FF8FAB] font-semibold text-sm">🧾 账单</a>
+        <a href="/pages/admin_stats.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">📈 统计</a>
+      </nav>
+      <div class="px-5 py-4 border-t border-[#FFD6E3] text-xs text-[#999999]">只读运营后台 · V1</div>
+    </aside>
+
+    <div class="flex-1 ml-56 min-w-0">
+      <header class="h-16 bg-white border-b border-[#FFD6E3] sticky top-0 z-10 flex items-center justify-between px-6">
+        <h1 class="text-lg font-bold">账单流水</h1>
+        <div class="flex items-center gap-4">
+          <span id="adminName" class="text-sm text-[#999999]">加载中…</span>
+          <button onclick="doAdminLogout()" class="text-sm text-[#FF6B6B] hover:underline">退出登录</button>
+        </div>
+      </header>
+
+      <main class="p-6 max-w-[1200px]">
+        <!-- 筛选栏 -->
+        <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-4 mb-4">
+          <div class="flex flex-wrap items-end gap-3">
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">用户名 / UID</label>
+              <input id="fSearch" type="text" placeholder="用户名或 UID"
+                class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">类型</label>
+              <select id="fType" class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm bg-white">
+                <option value="">全部</option>
+                <option value="expense">支出</option>
+                <option value="income">收入</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">分类</label>
+              <input id="fCategory" type="text" placeholder="分类名称" class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">账户</label>
+              <input id="fAccount" type="text" placeholder="账户名称" class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">记账日期起</label>
+              <input id="fDateFrom" type="date" class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">记账日期止</label>
+              <input id="fDateTo" type="date" class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm" />
+            </div>
+            <button id="btnSearch" class="h-10 px-5 rounded-full bg-gradient-to-b from-[#FFB6C8] to-[#FF8FAB] text-white text-sm font-semibold">查询</button>
+            <button id="btnReset" class="h-10 px-5 rounded-full border border-[#FFD6E3] text-[#999999] text-sm">重置</button>
+            <button id="btnExport" class="h-10 px-5 rounded-full border border-[#35C3A1] text-[#00725C] text-sm">导出 CSV</button>
+          </div>
+        </div>
+
+        <p id="error" class="hidden mb-4 px-4 py-3 rounded-xl bg-[#FFDAD6] text-[#93000A] text-sm"></p>
+
+        <!-- 当前筛选汇总 -->
+        <div class="grid grid-cols-3 gap-4 mb-4" id="summary"></div>
+
+        <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-[#FFF4F7] text-[#999999] text-left">
+                <tr>
+                  <th class="px-4 py-3 font-medium">账单ID</th>
+                  <th class="px-4 py-3 font-medium">用户名</th>
+                  <th class="px-4 py-3 font-medium">类型</th>
+                  <th class="px-4 py-3 font-medium text-right"><button class="sortable" data-sort="amount">金额</button></th>
+                  <th class="px-4 py-3 font-medium">分类</th>
+                  <th class="px-4 py-3 font-medium">账户</th>
+                  <th class="px-4 py-3 font-medium">备注</th>
+                  <th class="px-4 py-3 font-medium"><button class="sortable" data-sort="billDate">记账日期</button></th>
+                  <th class="px-4 py-3 font-medium"><button class="sortable" data-sort="createdAt">记录时间</button></th>
+                  <th class="px-4 py-3 font-medium text-right">详情</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+          <div class="flex items-center justify-between px-4 py-3 border-t border-[#FFF4F7] text-sm">
+            <span id="pageInfo" class="text-[#999999]"></span>
+            <div class="flex gap-2">
+              <button id="btnPrev" class="px-4 py-2 rounded-full border border-[#FFD6E3] text-sm disabled:opacity-40">上一页</button>
+              <button id="btnNext" class="px-4 py-2 rounded-full border border-[#FFD6E3] text-sm disabled:opacity-40">下一页</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/admin-nav.js"></script>
+  <script>
+    const state = { page: 1, pageSize: 20, sort: 'billDate', order: 'desc', search: '', type: '', category: '', account: '', dateFrom: '', dateTo: '' };
+    let bills = [];
+    const tbody = document.getElementById('tbody');
+    const errEl = document.getElementById('error');
+
+    function buildQuery() {
+      const p = new URLSearchParams({ page: state.page, pageSize: state.pageSize, sort: state.sort, order: state.order });
+      if (state.search) p.set('search', state.search);
+      if (state.type) p.set('type', state.type);
+      if (state.category) p.set('category', state.category);
+      if (state.account) p.set('account', state.account);
+      if (state.dateFrom) p.set('dateFrom', state.dateFrom);
+      if (state.dateTo) p.set('dateTo', state.dateTo);
+      return p;
+    }
+
+    function moneyHtml(b) {
+      return b.type === 'expense'
+        ? `<span class="text-[#4A4A4A] font-medium">-¥${centsToYuan(b.amount)}</span>`
+        : `<span class="text-[#35C3A1] font-medium">+¥${centsToYuan(b.amount)}</span>`;
+    }
+
+    function renderSort() {
+      document.querySelectorAll('.sortable').forEach((b) => {
+        const key = b.dataset.sort;
+        b.textContent = b.textContent.replace(/[▲▼]\s*$/, '');
+        if (key === state.sort) b.textContent += (state.order === 'desc' ? ' ▲' : ' ▼');
+      });
+    }
+
+    function render() {
+      if (!bills.length) {
+        tbody.innerHTML = `<tr><td colspan="10" class="px-4 py-10 text-center text-[#999999]">暂无符合条件的账单</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = bills.map((b) => `
+        <tr class="border-t border-[#FFF4F7] hover:bg-[#FFF9FA]" data-id="${b.id}">
+          <td class="px-4 py-3 text-[#999999]">${b.id}</td>
+          <td class="px-4 py-3"><a href="/pages/admin_user_detail.html?id=${b.userId}" class="text-[#FF8FAB] hover:underline">${esc(b.username)}</a></td>
+          <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs ${b.type === 'expense' ? 'bg-[#EFEFEF] text-[#4A4A4A]' : 'bg-[#E7F6EF] text-[#00725C]'}">${b.type === 'expense' ? '支出' : '收入'}</span></td>
+          <td class="px-4 py-3 text-right">${moneyHtml(b)}</td>
+          <td class="px-4 py-3">${esc(b.categoryIcon)} ${esc(b.categoryName)}</td>
+          <td class="px-4 py-3 text-[#999999]">${esc(b.accountName || '—')}</td>
+          <td class="px-4 py-3 text-[#999999] max-w-[140px] truncate">${esc(b.note || '—')}</td>
+          <td class="px-4 py-3 text-[#999999]">${esc(b.billDate)}</td>
+          <td class="px-4 py-3 text-[#999999]">${esc(b.createdAt)}</td>
+          <td class="px-4 py-3 text-right"><button class="text-[#FF8FAB] hover:underline toggle">展开</button></td>
+        </tr>
+        <tr class="hidden border-t border-[#FFF4F7] bg-[#FFF9FA]" data-detail="${b.id}">
+          <td colspan="10" class="px-6 py-3 text-sm text-[#999999]">
+            <span class="text-[#4A4A4A] font-medium">备注：</span>${esc(b.note || '—')}
+            <span class="ml-6 text-[#4A4A4A] font-medium">账户：</span>${esc(b.accountName || '—')}
+            <span class="ml-6 text-[#4A4A4A] font-medium">用户：</span>${esc(b.username)}（UID ${b.userId}）
+            <span class="ml-6 text-[#4A4A4A] font-medium">记录时间：</span>${esc(b.createdAt)}
+          </td>
+        </tr>`).join('');
+      renderSort();
+    }
+
+    async function load() {
+      errEl.classList.add('hidden');
+      try {
+        const data = await adminApi('/api/admin/bills?' + buildQuery().toString());
+        bills = data.bills;
+        const total = data.total;
+        const totalPages = Math.max(1, Math.ceil(total / data.pageSize));
+        render();
+
+        document.getElementById('summary').innerHTML = `
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-4">
+            <div class="text-xs text-[#999999]">当前筛选 · 支出合计</div>
+            <div class="text-xl font-bold mt-1">¥${centsToYuan(data.summary.expenseTotal)}</div>
+          </div>
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-4">
+            <div class="text-xs text-[#999999]">当前筛选 · 收入合计</div>
+            <div class="text-xl font-bold mt-1 text-[#00725C]">¥${centsToYuan(data.summary.incomeTotal)}</div>
+          </div>
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-4">
+            <div class="text-xs text-[#999999]">当前筛选 · 笔数</div>
+            <div class="text-xl font-bold mt-1">${data.summary.count}</div>
+          </div>`;
+
+        document.getElementById('pageInfo').textContent = `共 ${total} 条 · 第 ${state.page}/${totalPages} 页`;
+        document.getElementById('btnPrev').disabled = state.page <= 1;
+        document.getElementById('btnNext').disabled = state.page >= totalPages;
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    tbody.addEventListener('click', (e) => {
+      const btn = e.target.closest('.toggle');
+      if (!btn) return;
+      const tr = btn.closest('tr');
+      const id = tr.dataset.id;
+      const detail = tbody.querySelector(`tr[data-detail="${id}"]`);
+      if (detail) {
+        const hidden = detail.classList.toggle('hidden');
+        btn.textContent = hidden ? '展开' : '收起';
+      }
+    });
+
+    document.getElementById('btnSearch').addEventListener('click', () => {
+      state.search = document.getElementById('fSearch').value.trim();
+      state.type = document.getElementById('fType').value;
+      state.category = document.getElementById('fCategory').value.trim();
+      state.account = document.getElementById('fAccount').value.trim();
+      state.dateFrom = document.getElementById('fDateFrom').value;
+      state.dateTo = document.getElementById('fDateTo').value;
+      state.page = 1;
+      load();
+    });
+    document.getElementById('btnReset').addEventListener('click', () => {
+      ['fSearch', 'fCategory', 'fAccount', 'fDateFrom', 'fDateTo'].forEach((id) => (document.getElementById(id).value = ''));
+      document.getElementById('fType').value = '';
+      Object.assign(state, { page: 1, search: '', type: '', category: '', account: '', dateFrom: '', dateTo: '' });
+      load();
+    });
+    document.getElementById('fSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('btnSearch').click(); });
+    document.getElementById('btnPrev').addEventListener('click', () => { state.page--; load(); });
+    document.getElementById('btnNext').addEventListener('click', () => { state.page++; load(); });
+    document.querySelectorAll('.sortable').forEach((b) => b.addEventListener('click', () => {
+      if (state.sort === b.dataset.sort) state.order = state.order === 'desc' ? 'asc' : 'desc';
+      else { state.sort = b.dataset.sort; state.order = 'desc'; }
+      state.page = 1;
+      load();
+    }));
+    document.getElementById('btnExport').addEventListener('click', () => {
+      const p = new URLSearchParams(buildQuery());
+      p.delete('page'); p.delete('pageSize'); p.delete('sort'); p.delete('order');
+      location.href = '/api/admin/export/bills.csv?' + p.toString();
+    });
+
+    // 若从用户详情页跳入且带 search=UID，自动预填并查询
+    const initSearch = new URLSearchParams(location.search).get('search');
+    if (initSearch) {
+      document.getElementById('fSearch').value = initSearch;
+      state.search = initSearch;
+    }
+    load();
+  </script>
+</body>
+</html>

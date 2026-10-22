@@ -1,0 +1,22 @@
+{
+  "name": "financial-steward-admin-backend",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "财务管家后台管理系统后端（Express + MySQL）：超级管理员登录 + 总览/用户/账单/统计 + CSV 导出",
+  "scripts": {
+    "start": "nodemon src/server.js",
+    "start:prod": "node src/server.js",
+    "seed:admin": "node src/scripts/seed-admin.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "mysql2": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

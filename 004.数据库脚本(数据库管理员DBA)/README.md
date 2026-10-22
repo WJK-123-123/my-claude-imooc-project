@@ -4,7 +4,7 @@
 |---|---|
 | 数据库 | `financial_steward`（MySQL 8.0+，已在 MySQL 9.7.0 Docker 容器验证） |
 | 字符集 / 排序规则 | `utf8mb4` / `utf8mb4_0900_ai_ci`（emoji 图标、中文用户名必需；不区分大小写） |
-| 设计依据 | 《财务管家-PRD-V1.0.md》V1.10（F1–F7、§7 数据模型、附录 A）；003 原型 05/09/10/12/13 页 |
+| 设计依据 | 《财务管家-PRD-V1.0.md》V1.10（F1–F7、§7 数据模型、附录 A）；003 原型 05/09/10/12/13 页；`admin_user` 表出自《后台管理系统-PRD-V1.0.md》V1.1 · A1 |
 | 脚本 | `01_schema.sql` 建表（可重复执行，会清库重建）；`02_seed.sql` 模板 + 演示数据 |
 | 硬约定 | **金额一律以「分」为单位的整数存储，全程禁用浮点**；所有查询强制 `user_id` 过滤 |
 
@@ -24,6 +24,8 @@ account  1 ──── n bill      （bill.account_id → SET NULL：账户删�
 
 category_template / account_template ：无外键的全局只读参考清单，
 V1.9 起注册不再复制，新账号 category / account 初始为空、由用户自行添加（见 §5.1）
+
+admin_user ：后台管理系统超级管理员账号，独立无外键、与上述用户端各表隔离（见 §2 表 9）
 ```
 
 ## 2. 表清单
@@ -38,6 +40,7 @@ V1.9 起注册不再复制，新账号 category / account 初始为空、由用�
 | 6 | `category` | F3/F4/F7、13 页 | 用户分类：支出/收入双 scope、emoji 图标、排序、查重唯一约束 |
 | 7 | `account` | F3-9、12 页 | 支付方式/收款账户标记（**无任何金额字段**，非多账户余额体系） |
 | 8 | `bill` | F3/F4/F5/F7 | 账单流水：类型、金额（分）、分类、账户标记、备注、日期 |
+| 9 | `admin_user` | 后台 A1 | 后台管理系统超级管理员账号：账号与会话合一，与用户端 `user` 表完全隔离 |
 
 ## 3. 关键设计决策（含与 PRD §7 草案的两处实现层调整）
 
@@ -92,6 +95,7 @@ F1-1「查重不区分大小写（`XiaoLin` 与 `xiaolin` 同名）」及分类/
 | `account (user_id, sort)` / `(user_id, name)` 唯一 | 05 页 chips 渲染 / 12 页增删改查查重 |
 | `user_session (token_hash)` 唯一、`(expires_at)` | 每请求令牌校验；过期清扫任务 |
 | `password_reset_code (user_id, created_at)`、`(expires_at)` | 60s 重发间隔判断；过期清扫 |
+| `admin_user (token_hash)` | 超级管理员每次请求的会话令牌校验（后台 A1） |
 
 ## 5. 应用侧对接约定
 
@@ -167,3 +171,4 @@ docker exec -i <容器名> mysql -uroot -p123456 --default-character-set=utf8mb4
 |---|---|---|
 | V1.0 | 2026-10-20 | 首版：8 表 DDL + 附录 A 模板种子 + 演示数据；对应 PRD V1.6 / 原型 2026-10-19 状态 |
 | V1.1 | 2026-10-21 | 同步 PRD V1.9：注册不再复制模板，category_template/account_template 转为参考清单；02_seed 演示数据说明相应调整 |
+| V1.2 | 2026-10-22 | 新增 `admin_user` 表（后台管理系统超级管理员账号，账号与会话合一、全系统仅此一张新增表）；同步后台 PRD V1.1 · A1 |

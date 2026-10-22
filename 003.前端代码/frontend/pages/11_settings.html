@@ -196,14 +196,65 @@
               <span class="material-symbols-outlined text-[28px]">warning</span>
             </div>
             <h3 class="text-headline-md font-headline-md text-on-surface mb-2">注销账号警告</h3>
-            <p class="text-body-md text-on-surface-variant mb-6">注销后所有记账数据将被永久清空，无法找回，请谨慎操作！</p>
+            <p class="text-body-md text-on-surface-variant mb-4">注销后所有记账数据将被永久清空，无法找回，请谨慎操作！</p>
+            <div class="w-full text-left mb-space-md">
+              <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="deactivate-password">请输入登录密码确认</label>
+              <input id="deactivate-password" type="password" autocomplete="current-password" class="w-full h-11 mt-space-xs px-space-md rounded-2xl bg-surface-container-low border border-surface-container-high text-body-md font-body-md text-on-surface placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-error/50 transition-all" placeholder="输入密码以确认注销">
+            </div>
+            <p id="deactivate-error" class="hidden w-full font-body-sm text-body-sm text-error text-center mb-2"></p>
             <div class="grid grid-cols-2 gap-3 w-full">
               <button onclick="backToMine()" class="h-12 rounded-full bg-surface-container-high text-on-surface font-label-lg active:scale-95 transition-all">我再想想</button>
-              <button onclick="location.href='02_login.html'" class="h-12 rounded-full bg-error text-on-error font-label-lg active:scale-95 transition-all">确认注销</button>
+              <button id="deactivate-confirm-btn" onclick="doDeactivate()" class="h-12 rounded-full bg-error text-on-error font-label-lg active:scale-95 transition-all">确认注销</button>
             </div>
           </div>
         </div>
       `;
+    }
+
+    // 注销账号（PRD F1-9）：需输入登录密码二次确认，成功后进入 7 天冷静期（期间重新登录可撤销注销）
+    function doDeactivate() {
+      const btn = document.getElementById('deactivate-confirm-btn');
+      const errBox = document.getElementById('deactivate-error');
+      const password = (document.getElementById('deactivate-password').value || '').trim();
+      function showErr(t) {
+        errBox.textContent = t || '';
+        errBox.classList.toggle('hidden', !t);
+      }
+      if (!password) { showErr('请输入登录密码'); return; }
+      showErr('');
+      btn.disabled = true;
+      btn.textContent = '提交中…';
+      fetch('/api/auth/deactivate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (data) { return { ok: r.ok, data: data }; });
+      }).then(function (res) {
+        if (res.ok) {
+          // 后端已清会话并置 deleting 冷静期；告知冷静期后回登录页（PRD F1-9 验收 9）
+          document.getElementById('modal-container').innerHTML = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-gutter bg-inverse-surface/40 backdrop-blur-sm animate-fade-in">
+              <div class="w-full max-w-xs bg-surface rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center">
+                <div class="w-14 h-14 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center mb-4">
+                  <span class="material-symbols-outlined text-[28px]">task_alt</span>
+                </div>
+                <h3 class="text-headline-md font-headline-md text-on-surface mb-2">注销申请已提交</h3>
+                <p class="text-body-md text-on-surface-variant mb-6">已进入 7 天冷静期，期间重新登录即可撤销注销；期满后数据将永久删除。</p>
+                <button onclick="location.href='02_login.html'" class="w-full h-12 rounded-full bg-primary text-on-primary font-label-lg active:scale-95 transition-all">我知道了</button>
+              </div>
+            </div>
+          `;
+          return;
+        }
+        btn.disabled = false;
+        btn.textContent = '确认注销';
+        showErr(res.data.message || '注销失败，请稍后再试');
+      }).catch(function () {
+        btn.disabled = false;
+        btn.textContent = '确认注销';
+        showErr('网络异常，请稍后再试');
+      });
     }
 
     function backToMine() {

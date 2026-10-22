@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>用户管理 · 财务管家后台管理系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#FFF4F7] text-[#4A4A4A]" data-page="users">
+  <div class="flex min-h-screen">
+    <aside class="w-56 fixed inset-y-0 left-0 bg-white border-r border-[#FFD6E3] flex flex-col z-10">
+      <div class="h-16 flex items-center gap-2 px-5 border-b border-[#FFD6E3]">
+        <span class="text-xl">🌸</span>
+        <div>
+          <div class="font-bold leading-tight">财务管家</div>
+          <div class="text-[11px] text-[#999999] leading-tight">后台管理系统</div>
+        </div>
+      </div>
+      <nav class="flex-1 px-3 py-4 space-y-1">
+        <a href="/pages/admin_home.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">📊 仪表盘</a>
+        <a href="/pages/admin_users.html" class="block px-4 py-2.5 rounded-xl bg-[#FFE4EC] text-[#FF8FAB] font-semibold text-sm">👥 用户</a>
+        <a href="/pages/admin_bills.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">🧾 账单</a>
+        <a href="/pages/admin_stats.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">📈 统计</a>
+      </nav>
+      <div class="px-5 py-4 border-t border-[#FFD6E3] text-xs text-[#999999]">只读运营后台 · V1</div>
+    </aside>
+
+    <div class="flex-1 ml-56 min-w-0">
+      <header class="h-16 bg-white border-b border-[#FFD6E3] sticky top-0 z-10 flex items-center justify-between px-6">
+        <h1 class="text-lg font-bold">用户管理</h1>
+        <div class="flex items-center gap-4">
+          <span id="adminName" class="text-sm text-[#999999]">加载中…</span>
+          <button onclick="doAdminLogout()" class="text-sm text-[#FF6B6B] hover:underline">退出登录</button>
+        </div>
+      </header>
+
+      <main class="p-6 max-w-[1200px]">
+        <!-- 筛选栏 -->
+        <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-4 mb-4">
+          <div class="flex flex-wrap items-end gap-3">
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">用户名 / UID</label>
+              <input id="fSearch" type="text" placeholder="用户名或 UID"
+                class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">状态</label>
+              <select id="fStatus" class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm bg-white">
+                <option value="">全部</option>
+                <option value="active">正常</option>
+                <option value="deleting">注销中</option>
+                <option value="deleted">已注销</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">有无账单</label>
+              <select id="fHasBills" class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm bg-white">
+                <option value="">全部</option>
+                <option value="1">有账单</option>
+                <option value="0">无账单</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">注册起始</label>
+              <input id="fDateFrom" type="date" class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs text-[#999999] mb-1">注册截止</label>
+              <input id="fDateTo" type="date" class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm" />
+            </div>
+            <button id="btnSearch" class="h-10 px-5 rounded-full bg-gradient-to-b from-[#FFB6C8] to-[#FF8FAB] text-white text-sm font-semibold">查询</button>
+            <button id="btnReset" class="h-10 px-5 rounded-full border border-[#FFD6E3] text-[#999999] text-sm">重置</button>
+            <button id="btnExport" class="h-10 px-5 rounded-full border border-[#35C3A1] text-[#00725C] text-sm">导出 CSV</button>
+          </div>
+        </div>
+
+        <p id="error" class="hidden mb-4 px-4 py-3 rounded-xl bg-[#FFDAD6] text-[#93000A] text-sm"></p>
+
+        <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-[#FFF4F7] text-[#999999] text-left">
+                <tr>
+                  <th class="px-4 py-3 font-medium">UID</th>
+                  <th class="px-4 py-3 font-medium">用户名</th>
+                  <th class="px-4 py-3 font-medium">状态</th>
+                  <th class="px-4 py-3 font-medium"><button class="sortable" data-sort="register">注册时间</button></th>
+                  <th class="px-4 py-3 font-medium"><button class="sortable" data-sort="lastLogin">最后登录</button></th>
+                  <th class="px-4 py-3 font-medium text-right"><button class="sortable" data-sort="billCount">账单笔数</button></th>
+                  <th class="px-4 py-3 font-medium text-right"><button class="sortable" data-sort="expense">累计支出</button></th>
+                  <th class="px-4 py-3 font-medium text-right">累计收入</th>
+                  <th class="px-4 py-3 font-medium text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+          <div class="flex items-center justify-between px-4 py-3 border-t border-[#FFF4F7] text-sm">
+            <span id="pageInfo" class="text-[#999999]"></span>
+            <div class="flex gap-2">
+              <button id="btnPrev" class="px-4 py-2 rounded-full border border-[#FFD6E3] text-sm disabled:opacity-40">上一页</button>
+              <button id="btnNext" class="px-4 py-2 rounded-full border border-[#FFD6E3] text-sm disabled:opacity-40">下一页</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/admin-nav.js"></script>
+  <script>
+    const state = { page: 1, pageSize: 20, sort: 'register', order: 'desc', search: '', status: '', hasBills: '', dateFrom: '', dateTo: '' };
+    const tbody = document.getElementById('tbody');
+    const errEl = document.getElementById('error');
+
+    function buildQuery() {
+      const p = new URLSearchParams({ page: state.page, pageSize: state.pageSize, sort: state.sort, order: state.order });
+      if (state.search) p.set('search', state.search);
+      if (state.status) p.set('status', state.status);
+      if (state.hasBills) p.set('hasBills', state.hasBills);
+      if (state.dateFrom) p.set('dateFrom', state.dateFrom);
+      if (state.dateTo) p.set('dateTo', state.dateTo);
+      return p;
+    }
+
+    function statusBadge(s) {
+      const map = {
+        active: 'bg-[#E7F6EF] text-[#00725C]',
+        deleting: 'bg-[#FFF3E0] text-[#B26A00]',
+        deleted: 'bg-[#EFEFEF] text-[#999999]',
+      };
+      return `<span class="px-2 py-0.5 rounded-full text-xs ${map[s] || map.deleted}">${STATUS_LABEL[s] || s}</span>`;
+    }
+
+    function renderSort() {
+      document.querySelectorAll('.sortable').forEach((b) => {
+        const key = b.dataset.sort;
+        b.textContent = b.textContent.replace(/[▲▼]\s*$/, '');
+        if (key === state.sort) b.textContent += (state.order === 'desc' ? ' ▲' : ' ▼');
+      });
+    }
+
+    async function load() {
+      errEl.classList.add('hidden');
+      try {
+        const data = await adminApi('/api/admin/users?' + buildQuery().toString());
+        const total = data.total;
+        const totalPages = Math.max(1, Math.ceil(total / data.pageSize));
+
+        if (!data.users.length) {
+          tbody.innerHTML = `<tr><td colspan="9" class="px-4 py-10 text-center text-[#999999]">暂无符合条件的用户</td></tr>`;
+        } else {
+          tbody.innerHTML = data.users.map((u) => `
+            <tr class="border-t border-[#FFF4F7] hover:bg-[#FFF9FA]">
+              <td class="px-4 py-3 text-[#999999]">${u.id}</td>
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                  ${u.avatarUrl ? `<img src="${esc(u.avatarUrl)}" class="w-7 h-7 rounded-full object-cover" alt="" />` : '<span class="w-7 h-7 rounded-full bg-[#FFE4EC] flex items-center justify-center text-xs">🌸</span>'}
+                  <span class="font-medium">${esc(u.username)}</span>
+                </div>
+              </td>
+              <td class="px-4 py-3">${statusBadge(u.status)}</td>
+              <td class="px-4 py-3 text-[#999999]">${esc(u.registeredAt || '—')}</td>
+              <td class="px-4 py-3 text-[#999999]">${esc(u.lastLoginAt || '—')}</td>
+              <td class="px-4 py-3 text-right">${u.billCount}</td>
+              <td class="px-4 py-3 text-right font-medium">${centsToYuan(u.expenseTotal)}</td>
+              <td class="px-4 py-3 text-right text-[#00725C]">${centsToYuan(u.incomeTotal)}</td>
+              <td class="px-4 py-3 text-right"><a href="/pages/admin_user_detail.html?id=${u.id}" class="text-[#FF8FAB] hover:underline">详情</a></td>
+            </tr>`).join('');
+        }
+
+        document.getElementById('pageInfo').textContent = `共 ${total} 条 · 第 ${state.page}/${totalPages} 页`;
+        document.getElementById('btnPrev').disabled = state.page <= 1;
+        document.getElementById('btnNext').disabled = state.page >= totalPages;
+        renderSort();
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    document.getElementById('btnSearch').addEventListener('click', () => {
+      state.search = document.getElementById('fSearch').value.trim();
+      state.status = document.getElementById('fStatus').value;
+      state.hasBills = document.getElementById('fHasBills').value;
+      state.dateFrom = document.getElementById('fDateFrom').value;
+      state.dateTo = document.getElementById('fDateTo').value;
+      state.page = 1;
+      load();
+    });
+    document.getElementById('btnReset').addEventListener('click', () => {
+      ['fSearch', 'fDateFrom', 'fDateTo'].forEach((id) => (document.getElementById(id).value = ''));
+      document.getElementById('fStatus').value = '';
+      document.getElementById('fHasBills').value = '';
+      Object.assign(state, { page: 1, search: '', status: '', hasBills: '', dateFrom: '', dateTo: '' });
+      load();
+    });
+    document.getElementById('fSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('btnSearch').click(); });
+    document.getElementById('btnPrev').addEventListener('click', () => { state.page--; load(); });
+    document.getElementById('btnNext').addEventListener('click', () => { state.page++; load(); });
+    document.querySelectorAll('.sortable').forEach((b) => b.addEventListener('click', () => {
+      if (state.sort === b.dataset.sort) state.order = state.order === 'desc' ? 'asc' : 'desc';
+      else { state.sort = b.dataset.sort; state.order = 'desc'; }
+      state.page = 1;
+      load();
+    }));
+    document.getElementById('btnExport').addEventListener('click', () => {
+      const p = new URLSearchParams(buildQuery());
+      p.delete('page'); p.delete('pageSize'); p.delete('sort'); p.delete('order');
+      location.href = '/api/admin/export/users.csv?' + p.toString();
+    });
+
+    load();
+  </script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>统计报表 · 财务管家后台管理系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/assets/chart.umd.js"></script>
+</head>
+<body class="bg-[#FFF4F7] text-[#4A4A4A]" data-page="stats">
+  <div class="flex min-h-screen">
+    <aside class="w-56 fixed inset-y-0 left-0 bg-white border-r border-[#FFD6E3] flex flex-col z-10">
+      <div class="h-16 flex items-center gap-2 px-5 border-b border-[#FFD6E3]">
+        <span class="text-xl">🌸</span>
+        <div>
+          <div class="font-bold leading-tight">财务管家</div>
+          <div class="text-[11px] text-[#999999] leading-tight">后台管理系统</div>
+        </div>
+      </div>
+      <nav class="flex-1 px-3 py-4 space-y-1">
+        <a href="/pages/admin_home.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">📊 仪表盘</a>
+        <a href="/pages/admin_users.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">👥 用户</a>
+        <a href="/pages/admin_bills.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">🧾 账单</a>
+        <a href="/pages/admin_stats.html" class="block px-4 py-2.5 rounded-xl bg-[#FFE4EC] text-[#FF8FAB] font-semibold text-sm">📈 统计</a>
+      </nav>
+      <div class="px-5 py-4 border-t border-[#FFD6E3] text-xs text-[#999999]">只读运营后台 · V1</div>
+    </aside>
+
+    <div class="flex-1 ml-56 min-w-0">
+      <header class="h-16 bg-white border-b border-[#FFD6E3] sticky top-0 z-10 flex items-center justify-between px-6">
+        <h1 class="text-lg font-bold">统计报表</h1>
+        <div class="flex items-center gap-4">
+          <span id="adminName" class="text-sm text-[#999999]">加载中…</span>
+          <button onclick="doAdminLogout()" class="text-sm text-[#FF6B6B] hover:underline">退出登录</button>
+        </div>
+      </header>
+
+      <main class="p-6 max-w-[1200px]">
+        <!-- 时间维度切换 -->
+        <div class="flex items-center gap-3 mb-4">
+          <div class="flex bg-white rounded-full p-1 shadow-[0_4px_12px_rgba(255,143,171,0.10)]">
+            <button id="btnYear" class="px-4 py-2 rounded-full text-sm font-semibold">按年</button>
+            <button id="btnRecent" class="px-4 py-2 rounded-full text-sm font-semibold">最近 12 个月</button>
+          </div>
+          <select id="yearSelect" class="h-10 px-3 rounded-xl border border-[#FFD6E3] focus:outline-none focus:ring-2 focus:ring-[#FF8FAB] text-sm bg-white"></select>
+        </div>
+
+        <p id="error" class="hidden mb-4 px-4 py-3 rounded-xl bg-[#FFDAD6] text-[#93000A] text-sm"></p>
+
+        <!-- 概览 -->
+        <div class="grid grid-cols-3 gap-4 mb-4" id="summary"></div>
+
+        <!-- 收支趋势 -->
+        <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5 mb-4">
+          <h2 class="font-bold mb-4" id="trendTitle">收支趋势</h2>
+          <div class="h-72"><canvas id="chartTrend"></canvas></div>
+        </div>
+
+        <!-- 分类排行 + 账户分布 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5">
+            <h2 class="font-bold mb-3">支出分类排行</h2>
+            <div id="expCats"></div>
+          </div>
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5">
+            <h2 class="font-bold mb-3">收入分类排行</h2>
+            <div id="incCats"></div>
+          </div>
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5">
+            <h2 class="font-bold mb-3">支付方式分布</h2>
+            <div id="accts"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/admin-nav.js"></script>
+  <script>
+    const state = { range: 'year', year: new Date().getFullYear() };
+    const errEl = document.getElementById('error');
+    let trendChart = null;
+
+    // 占比文案：不足 0.05% 显示 <0.1%，其余一位小数（沿用用户端 F7 口径）
+    function pctLabel(ratio) {
+      const pct = ratio * 100;
+      if (pct > 0 && pct < 0.05) return '<0.1%';
+      return pct.toFixed(1) + '%';
+    }
+
+    function rankedList(el, list, total, barColor) {
+      if (!list.length) {
+        el.innerHTML = '<div class="py-4 text-center text-[#999999] text-sm">暂无数据</div>';
+        return;
+      }
+      el.innerHTML = list.slice(0, 10).map((c) => {
+        const ratio = total > 0 ? c.amount / total : 0;
+        return `
+          <div class="py-2 border-t border-[#FFF4F7] first:border-t-0">
+            <div class="flex items-center justify-between text-sm">
+              <span>${esc(c.icon)} ${esc(c.name)}</span>
+              <span class="font-medium">¥${centsToYuan(c.amount)}</span>
+            </div>
+            <div class="flex items-center gap-2 mt-1">
+              <div class="flex-1 h-1.5 rounded-full bg-[#FFF4F7] overflow-hidden">
+                <div class="h-full rounded-full" style="width:${Math.min(100, ratio * 100)}%;background:${barColor}"></div>
+              </div>
+              <span class="text-xs text-[#999999] w-16 text-right">${pctLabel(ratio)} · ${c.count}笔</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function refreshModeButtons() {
+      const yearMode = state.range === 'year';
+      document.getElementById('btnYear').className = `px-4 py-2 rounded-full text-sm font-semibold transition ${yearMode ? 'bg-[#FF8FAB] text-white' : 'text-[#999999]'}`;
+      document.getElementById('btnRecent').className = `px-4 py-2 rounded-full text-sm font-semibold transition ${!yearMode ? 'bg-[#FF8FAB] text-white' : 'text-[#999999]'}`;
+      document.getElementById('yearSelect').classList.toggle('hidden', !yearMode);
+    }
+
+    async function load() {
+      errEl.classList.add('hidden');
+      try {
+        const q = new URLSearchParams({ range: state.range });
+        if (state.range === 'year') q.set('year', state.year);
+        const data = await adminApi('/api/admin/stats?' + q.toString());
+
+        document.getElementById('trendTitle').textContent = state.range === 'year' ? `收支趋势 · ${state.year} 年` : '收支趋势 · 最近 12 个月';
+
+        document.getElementById('summary').innerHTML = `
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-4"><div class="text-xs text-[#999999]">账单笔数</div><div class="text-xl font-bold mt-1">${data.summary.billCount}</div></div>
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-4"><div class="text-xs text-[#999999]">支出合计</div><div class="text-xl font-bold mt-1">¥${centsToYuan(data.summary.expenseTotal)}</div></div>
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-4"><div class="text-xs text-[#999999]">收入合计</div><div class="text-xl font-bold mt-1 text-[#00725C]">¥${centsToYuan(data.summary.incomeTotal)}</div></div>`;
+
+        // 收支趋势折线图
+        const labels = data.trend.map((t) => t.label);
+        if (trendChart) trendChart.destroy();
+        trendChart = new Chart(document.getElementById('chartTrend'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              { label: '支出', data: data.trend.map((t) => t.expense), borderColor: '#4A4A4A', backgroundColor: '#4A4A4A', fill: false, tension: 0.3, pointRadius: 2, borderWidth: 2 },
+              { label: '收入', data: data.trend.map((t) => t.income), borderColor: '#35C3A1', backgroundColor: '#35C3A1', fill: false, tension: 0.3, pointRadius: 2, borderWidth: 2 },
+            ],
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+            scales: {
+              y: { beginAtZero: true, grid: { color: '#FFD6E3' }, ticks: { color: '#999999', font: { size: 11 } } },
+              x: { grid: { display: false }, ticks: { color: '#999999', font: { size: 11 } } },
+            },
+            plugins: {
+              legend: { labels: { color: '#4A4A4A', boxWidth: 12 } },
+              tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}：¥${centsToYuan(ctx.parsed.y)}` } },
+            },
+          },
+        });
+
+        rankedList(document.getElementById('expCats'), data.expenseCategories, data.summary.expenseTotal, '#FF8FAB');
+        rankedList(document.getElementById('incCats'), data.incomeCategories, data.summary.incomeTotal, '#35C3A1');
+        rankedList(document.getElementById('accts'), data.accounts, data.summary.expenseTotal + data.summary.incomeTotal, '#B48EAD');
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    // 年份选择器：当前年往前 10 年
+    (function initYears() {
+      const cur = new Date().getFullYear();
+      const sel = document.getElementById('yearSelect');
+      for (let y = cur; y >= cur - 10; y--) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y + ' 年';
+        if (y === state.year) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    })();
+
+    document.getElementById('btnYear').addEventListener('click', () => { state.range = 'year'; refreshModeButtons(); load(); });
+    document.getElementById('btnRecent').addEventListener('click', () => { state.range = 'recent12'; refreshModeButtons(); load(); });
+    document.getElementById('yearSelect').addEventListener('change', (e) => { state.year = Number(e.target.value); load(); });
+
+    refreshModeButtons();
+    load();
+  </script>
+</body>
+</html>

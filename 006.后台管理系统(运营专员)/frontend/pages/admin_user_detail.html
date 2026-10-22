@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>用户详情 · 财务管家后台管理系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#FFF4F7] text-[#4A4A4A]" data-page="users">
+  <div class="flex min-h-screen">
+    <aside class="w-56 fixed inset-y-0 left-0 bg-white border-r border-[#FFD6E3] flex flex-col z-10">
+      <div class="h-16 flex items-center gap-2 px-5 border-b border-[#FFD6E3]">
+        <span class="text-xl">🌸</span>
+        <div>
+          <div class="font-bold leading-tight">财务管家</div>
+          <div class="text-[11px] text-[#999999] leading-tight">后台管理系统</div>
+        </div>
+      </div>
+      <nav class="flex-1 px-3 py-4 space-y-1">
+        <a href="/pages/admin_home.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">📊 仪表盘</a>
+        <a href="/pages/admin_users.html" class="block px-4 py-2.5 rounded-xl bg-[#FFE4EC] text-[#FF8FAB] font-semibold text-sm">👥 用户</a>
+        <a href="/pages/admin_bills.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">🧾 账单</a>
+        <a href="/pages/admin_stats.html" class="block px-4 py-2.5 rounded-xl text-[#999999] hover:bg-[#FFF4F7] hover:text-[#FF8FAB] text-sm">📈 统计</a>
+      </nav>
+      <div class="px-5 py-4 border-t border-[#FFD6E3] text-xs text-[#999999]">只读运营后台 · V1</div>
+    </aside>
+
+    <div class="flex-1 ml-56 min-w-0">
+      <header class="h-16 bg-white border-b border-[#FFD6E3] sticky top-0 z-10 flex items-center justify-between px-6">
+        <h1 class="text-lg font-bold">用户详情</h1>
+        <div class="flex items-center gap-4">
+          <span id="adminName" class="text-sm text-[#999999]">加载中…</span>
+          <button onclick="doAdminLogout()" class="text-sm text-[#FF6B6B] hover:underline">退出登录</button>
+        </div>
+      </header>
+
+      <main class="p-6 max-w-[1200px]">
+        <a href="/pages/admin_users.html" class="text-sm text-[#FF8FAB] hover:underline">← 返回用户列表</a>
+        <p id="error" class="hidden mt-4 px-4 py-3 rounded-xl bg-[#FFDAD6] text-[#93000A] text-sm"></p>
+
+        <div id="content" class="mt-4 space-y-4"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/admin-nav.js"></script>
+  <script>
+    (async () => {
+      const errEl = document.getElementById('error');
+      const content = document.getElementById('content');
+      const id = new URLSearchParams(location.search).get('id');
+
+      if (!id) {
+        errEl.textContent = '缺少用户 ID';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      let data;
+      try {
+        data = await adminApi('/api/admin/users/' + encodeURIComponent(id));
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const u = data.user;
+      const s = u.summary;
+      const statusMap = { active: 'bg-[#E7F6EF] text-[#00725C]', deleting: 'bg-[#FFF3E0] text-[#B26A00]', deleted: 'bg-[#EFEFEF] text-[#999999]' };
+      const statusBadge = `<span class="px-2 py-0.5 rounded-full text-xs ${statusMap[u.status] || statusMap.deleted}">${STATUS_LABEL[u.status] || u.status}</span>`;
+
+      const catRows = (list) => list.length
+        ? list.map((c) => `
+            <div class="flex items-center justify-between py-2 border-t border-[#FFF4F7] first:border-t-0">
+              <div class="flex items-center gap-2"><span>${esc(c.icon)}</span><span>${esc(c.name)}</span></div>
+              <div class="text-right">
+                <div class="font-medium">¥${centsToYuan(c.amount)}</div>
+                <div class="text-xs text-[#999999]">${c.count} 笔</div>
+              </div>
+            </div>`).join('')
+        : '<div class="py-4 text-center text-[#999999] text-sm">暂无数据</div>';
+
+      const acctRows = (list) => list.length
+        ? list.map((a) => `
+            <div class="flex items-center justify-between py-2 border-t border-[#FFF4F7] first:border-t-0">
+              <div class="flex items-center gap-2"><span>${esc(a.icon)}</span><span>${esc(a.name)}</span></div>
+              <div class="text-right">
+                <div class="font-medium">¥${centsToYuan(a.amount)}</div>
+                <div class="text-xs text-[#999999]">${a.count} 笔</div>
+              </div>
+            </div>`).join('')
+        : '<div class="py-4 text-center text-[#999999] text-sm">暂无数据</div>';
+
+      const billRows = u.recentBills.length
+        ? u.recentBills.map((b) => `
+            <tr class="border-t border-[#FFF4F7]">
+              <td class="px-3 py-2">${esc(b.categoryIcon)} ${esc(b.categoryName)}</td>
+              <td class="px-3 py-2">${b.type === 'expense' ? '<span class="text-[#4A4A4A]">-</span>' : '<span class="text-[#35C3A1]">+</span>'}¥${centsToYuan(b.amount)}</td>
+              <td class="px-3 py-2 text-[#999999]">${esc(b.accountName || '—')}</td>
+              <td class="px-3 py-2 text-[#999999]">${esc(b.billDate)}</td>
+            </tr>`).join('')
+        : '<tr><td colspan="4" class="px-3 py-6 text-center text-[#999999]">暂无账单</td></tr>';
+
+      content.innerHTML = `
+        <!-- 基本信息 + 收支汇总 -->
+        <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-6">
+          <div class="flex items-center gap-4">
+            ${u.avatarUrl ? `<img src="${esc(u.avatarUrl)}" class="w-14 h-14 rounded-full object-cover" alt="" />` : '<span class="w-14 h-14 rounded-full bg-[#FFE4EC] flex items-center justify-center text-2xl">🌸</span>'}
+            <div class="flex-1">
+              <div class="flex items-center gap-3">
+                <span class="text-xl font-bold">${esc(u.username)}</span>
+                ${statusBadge}
+              </div>
+              <div class="text-sm text-[#999999] mt-1">UID ${u.id} · 注册于 ${esc(u.registeredAt)}</div>
+            </div>
+            <div class="text-right text-sm text-[#999999]">
+              <div>最后登录：${esc(u.lastLoginAt || '—')}</div>
+              <div class="mt-1">已坚持记账 <span class="text-[#FF8FAB] font-semibold">${u.joinedDays}</span> 天</div>
+              ${u.status === 'deleting' && u.purgeAt ? `<div class="mt-1 text-[#B26A00]">注销到期：${esc(u.purgeAt)}</div>` : ''}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
+            <div class="rounded-xl bg-[#FFF9FA] p-4"><div class="text-xs text-[#999999]">累计支出</div><div class="text-lg font-bold mt-1">¥${centsToYuan(s.expenseTotal)}</div></div>
+            <div class="rounded-xl bg-[#FFF9FA] p-4"><div class="text-xs text-[#999999]">累计收入</div><div class="text-lg font-bold mt-1 text-[#00725C]">¥${centsToYuan(s.incomeTotal)}</div></div>
+            <div class="rounded-xl bg-[#FFF9FA] p-4"><div class="text-xs text-[#999999]">结余</div><div class="text-lg font-bold mt-1 ${s.balance < 0 ? 'text-[#FF6B6B]' : 'text-[#35C3A1]'}">¥${centsToYuanSigned(s.balance)}</div></div>
+            <div class="rounded-xl bg-[#FFF9FA] p-4"><div class="text-xs text-[#999999]">账单笔数</div><div class="text-lg font-bold mt-1">${s.billCount}</div></div>
+            <div class="rounded-xl bg-[#FFF9FA] p-4"><div class="text-xs text-[#999999]">记账天数</div><div class="text-lg font-bold mt-1">${s.recordDays}</div></div>
+          </div>
+        </div>
+
+        <!-- 分类统计 + 账户统计 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5">
+            <h2 class="font-bold mb-2">支出分类排行</h2>
+            ${catRows(u.expenseCategories)}
+          </div>
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5">
+            <h2 class="font-bold mb-2">收入分类排行</h2>
+            ${catRows(u.incomeCategories)}
+          </div>
+          <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] p-5">
+            <h2 class="font-bold mb-2">支付方式分布</h2>
+            ${acctRows(u.accounts)}
+          </div>
+        </div>
+
+        <!-- 最近账单 -->
+        <div class="bg-white rounded-2xl shadow-[0_4px_12px_rgba(255,143,171,0.10)] overflow-hidden">
+          <div class="flex items-center justify-between px-5 py-4">
+            <h2 class="font-bold">最近账单</h2>
+            <a href="/pages/admin_bills.html?search=${encodeURIComponent(u.id)}" class="text-sm text-[#FF8FAB] hover:underline">查看全部账单 →</a>
+          </div>
+          <table class="w-full text-sm">
+            <thead class="bg-[#FFF4F7] text-[#999999] text-left">
+              <tr><th class="px-3 py-2 font-medium">分类</th><th class="px-3 py-2 font-medium">金额</th><th class="px-3 py-2 font-medium">账户</th><th class="px-3 py-2 font-medium">记账日期</th></tr>
+            </thead>
+            <tbody>${billRows}</tbody>
+          </table>
+        </div>`;
+    })();
+  </script>
+</body>
+</html>
