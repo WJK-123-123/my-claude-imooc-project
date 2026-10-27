@@ -109,7 +109,7 @@
     }
   </style>
   <script>document.documentElement.classList.add('icons-loading');</script>
-  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="财务管家 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_ec_m6MjUKpt8ZJe41U2u9IE6Fr97Fo8TmKDiHzCUcBSMCGute0MqiJLDrUq9qXNvSGEgh0BVKNu9XnQ5TpLQtNRXSSGrk8BvSch_c8ofuVlW5PSrzsAnULL-ikh2TlV3ysPxVz9L6XoY6qQ8xzvcFbmZiYwpD6W3Qslb6SmYxoozbpHgCCFFQHHqPlXlm2HveEqZCWFq-VCPo8s7WOJSrey8H98j-YAapK1GPXL4SSGcMnI0cSZ"><span class="text-headline-md font-headline-md text-on-surface">记一笔</span></div><button aria-label="个人中心" type="button" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform cursor-pointer" onclick="location.href='10_profile.html'"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></button></div></header><main class="flex flex-col relative w-full px-gutter pt-16 pb-24 bg-[#FFF4F7] flex-1"><div class="flex flex-col w-full pb-12">
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><span class="text-headline-md font-headline-md text-on-surface">记一笔</span></div><button aria-label="个人中心" type="button" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-transform cursor-pointer" onclick="location.href='10_profile.html'"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></button></div></header><main class="flex flex-col relative w-full px-gutter pt-16 pb-24 bg-[#FFF4F7] flex-1"><div class="flex flex-col w-full pb-12">
 <!-- Top Segmented Switcher: Expense vs Income -->
 <div class="flex justify-center mb-space-lg">
 <div class="bg-surface-container-high p-space-xs rounded-full flex gap-space-xs w-64 shadow-sm">
@@ -133,8 +133,14 @@
 <span class="text-body-sm text-primary font-bold">轻触切换</span>
 </div>
 <div class="grid grid-cols-3 gap-space-md" id="category-grid">
-<!-- 分类九宫格由页尾脚本按「分类管理（13）」数据动态渲染：支出/收入各一套 -->
+<!-- 分类九宫格由页尾脚本按「分类管理（13）」数据动态渲染：支出/收入各一套，每页最多 6 个、超出分页 -->
 
+</div>
+<!-- 分类分页条：分类超过 6 个时显示，上一页/下一页 -->
+<div class="flex items-center justify-center gap-space-sm mt-space-md" id="cat-pager" style="display:none">
+<button type="button" id="cat-page-prev" class="w-8 h-8 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all flex items-center justify-center" onclick="catPageMove(-1)"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+<span class="text-body-sm text-on-surface-variant min-w-12 text-center" id="cat-page-label">1/1</span>
+<button type="button" id="cat-page-next" class="w-8 h-8 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all flex items-center justify-center" onclick="catPageMove(1)"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
 </div>
 </div>
 <!-- Detail Inputs Card: Note, Date, Payment Method -->
@@ -227,6 +233,8 @@
     let curTab = 'expense';                    // 当前支出/收入
     let catSel = { expense: 0, income: 0 };    // 两套画面各自记住选中的分类（默认第一个）
     let acctSel = { expense: -1, income: -1 }; // 各自记住选中的账户（-1 = 未选，账户选填）
+    const CAT_PAGE_SIZE = 6;                   // 分类每页最多 6 个（3 列 × 2 行），超出分页
+    let catPage = { expense: 0, income: 0 };   // 两套画面各自记住当前分类页码（0 起）
 
     async function loadData() {
       try {
@@ -276,18 +284,26 @@
       renderAccounts();
     }
 
-    /* 分类九宫格：emoji + 名称，读「分类管理」数据库数据（无「新分类」入口） */
+    /* 分类九宫格：emoji + 名称，读「分类管理」数据库数据（无「新分类」入口）；每页最多 CAT_PAGE_SIZE 个、超出分页 */
     function renderCats() {
       const grid = document.getElementById('category-grid');
+      const pager = document.getElementById('cat-pager');
       const arr = cats[curTab] || [];
       if (catSel[curTab] >= arr.length) catSel[curTab] = Math.max(0, arr.length - 1);
+      const totalPages = Math.max(1, Math.ceil(arr.length / CAT_PAGE_SIZE));
+      if (catPage[curTab] < 0) catPage[curTab] = 0;
+      if (catPage[curTab] >= totalPages) catPage[curTab] = totalPages - 1;
+      const start = catPage[curTab] * CAT_PAGE_SIZE;
+      const pageArr = arr.slice(start, start + CAT_PAGE_SIZE);
       grid.innerHTML = '';
       if (!arr.length) {
         grid.innerHTML = '<div class="col-span-3 text-center text-body-md text-on-surface-variant py-8">暂无分类，请到「我的 → 分类管理」添加</div>';
+        if (pager) pager.style.display = 'none';
         return;
       }
-      arr.forEach(function (c, i) {
-        const on = i === catSel[curTab];
+      pageArr.forEach(function (c, i) {
+        const gi = start + i;   // 全局下标（分页后仍对应 cats[curTab] 里的真实位置）
+        const on = gi === catSel[curTab];
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'category-btn flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group border-2 ' +
@@ -302,9 +318,28 @@
             '<span class="text-2xl leading-none">' + esc(c.icon) + '</span>' +
           '</div>' +
           '<span class="text-body-md font-medium text-on-surface">' + esc(c.name) + '</span>';
-        btn.onclick = function () { selectCategory(i); };
+        btn.onclick = function () { selectCategory(gi); };
         grid.appendChild(btn);
       });
+      // 分页条：仅当超过一页时显示，同步页码与首/末页禁用态
+      if (pager) {
+        pager.style.display = totalPages > 1 ? 'flex' : 'none';
+        const label = document.getElementById('cat-page-label');
+        if (label) label.textContent = (catPage[curTab] + 1) + '/' + totalPages;
+        const prev = document.getElementById('cat-page-prev');
+        const next = document.getElementById('cat-page-next');
+        if (prev) prev.style.opacity = catPage[curTab] <= 0 ? '0.4' : '1';
+        if (next) next.style.opacity = catPage[curTab] >= totalPages - 1 ? '0.4' : '1';
+      }
+    }
+
+    function catPageMove(delta) {
+      const arr = cats[curTab] || [];
+      const totalPages = Math.max(1, Math.ceil(arr.length / CAT_PAGE_SIZE));
+      const next = catPage[curTab] + delta;
+      if (next < 0 || next >= totalPages) return;
+      catPage[curTab] = next;
+      renderCats();
     }
 
     function selectCategory(i) {

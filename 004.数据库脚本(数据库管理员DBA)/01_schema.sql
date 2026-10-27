@@ -167,7 +167,7 @@ CREATE TABLE `category` (
   `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '分类 ID（主键）',
   `user_id`    BIGINT UNSIGNED NOT NULL COMMENT '所属用户（严格隔离，所有查询强制过滤，防横向越权）',
   `scope`      ENUM('expense','income') NOT NULL COMMENT '归属类型：expense 支出 / income 收入（05 页顶部双分段）',
-  `name`       VARCHAR(16)     NOT NULL COMMENT '分类名称（V1 新增限 ≤4 个汉字——F3-4，应用层校验；列宽为 V1.1 放宽预留）',
+  `name`       VARCHAR(16)     NOT NULL COMMENT '分类名称（V1 新增限 ≤6 个汉字——F3-4，应用层校验；列宽为 V1.1 放宽预留）',
   `icon`       VARCHAR(16)     NOT NULL DEFAULT '📝' COMMENT '分类图标（emoji，置于浅粉圆底展示）',
   `sort`       INT             NOT NULL DEFAULT 0 COMMENT '九宫格排序（值小在前，默认选中第一个分类即 sort 最小者）',
   `is_system`  TINYINT(1)      NOT NULL DEFAULT 0 COMMENT '是否模板初始化：1=自附录 A 模板复制（V1.9 起注册不再复制，均为 0）/ 0=用户自定义新增（V1 内两者行为一致）',

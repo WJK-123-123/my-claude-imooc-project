@@ -7,7 +7,7 @@ import { requireAuth } from '../middleware/requireAuth.js';
 const router = Router();
 router.use(requireAuth);
 
-const NAME_MAX = 4;    // V1 新增分类限 ≤4 个汉字（PRD F3-4）
+const NAME_MAX = 6;    // V1 新增分类限 ≤6 个汉字（PRD F3-4）
 const ICON_MAX = 16;   // emoji 图标列宽
 
 function fail(res, status, message) {

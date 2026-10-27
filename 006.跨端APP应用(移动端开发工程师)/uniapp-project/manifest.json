@@ -1,0 +1,97 @@
+{
+    "name" : "财务管家",
+    "appid" : "",
+    "description" : "",
+    "versionName" : "1.0.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    /* 5+App特有相关 */
+    "app-plus" : {
+        "usingComponents" : true,
+        "nvueStyleCompiler" : "uni-app",
+        "compilerVersion" : 3,
+        "splashscreen" : {
+            "alwaysShowBeforeRender" : true,
+            "waiting" : true,
+            "autoclose" : true,
+            "delay" : 0
+        },
+        /* 模块配置 */
+        "modules" : {},
+        /* 应用发布信息 */
+        "distribute" : {
+            /* android打包配置 */
+            "android" : {
+                "permissions" : [
+                    "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\"/>",
+                    "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_LOGS\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
+                    "<uses-feature android:name=\"android.hardware.camera.autofocus\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+                    "<uses-permission android:name=\"android.permission.GET_ACCOUNTS\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_PHONE_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
+                    "<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
+                    "<uses-feature android:name=\"android.hardware.camera\"/>",
+                    "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>"
+                ]
+            },
+            /* ios打包配置 */
+            "ios" : {},
+            /* SDK配置 */
+            "sdkConfigs" : {}
+        }
+    },
+    /* 快应用特有相关 */
+    "quickapp" : {},
+    /* 小程序特有相关 */
+    "mp-weixin" : {
+        "appid" : "",
+        "setting" : {
+            "urlCheck" : false
+        },
+        "usingComponents" : true
+    },
+    "mp-alipay" : {
+        "usingComponents" : true
+    },
+    "mp-baidu" : {
+        "usingComponents" : true
+    },
+    "mp-toutiao" : {
+        "usingComponents" : true
+    },
+    /* 鸿蒙(HarmonyOS)平台配置：应用包名，真机调试/发行必需，签名证书需与之一致 */
+    "app-harmony" : {
+        "distribute" : {
+            "bundleName" : "com.example.myapplication",
+            "signingConfigs" : {
+                "default" : {
+                    "certpath" : "C:/Users/26535/.ohos/config/default_MyApplication_CoauBxj8ZR_yyMeewqZEf9u7y8Md23lVR_bDuMTMu4M=.cer",
+                    "keyAlias" : "debugKey",
+                    "keyPassword" : "0000001BBB94F039E6BBBCB1A40C26EC5825E3B6E7F1CC720FABDBC85C3EA808F21B1E36FD3226F00FBD3A",
+                    "profile" : "C:/Users/26535/.ohos/config/default_MyApplication_CoauBxj8ZR_yyMeewqZEf9u7y8Md23lVR_bDuMTMu4M=.p7b",
+                    "signAlg" : "SHA256withECDSA",
+                    "storeFile" : "C:/Users/26535/.ohos/config/default_MyApplication_CoauBxj8ZR_yyMeewqZEf9u7y8Md23lVR_bDuMTMu4M=.p12",
+                    "storePassword" : "0000001B138D625E15A2AA102B225B58386FA508D4D1C6B407FDCD287105A14461CCA93ED90B33154F6459"
+                }
+            }
+        }
+    },
+    /* H5 特有相关：经 devServer 代理把 /api 转发到后端，规避跨域（后端未开 CORS） */
+    "h5" : {
+        "devServer" : {
+            "proxy" : {
+                "/api" : {
+                    "target" : "http://localhost:3000",
+                    "changeOrigin" : true
+                }
+            }
+        }
+    },
+    "vueVersion" : "3"
+}

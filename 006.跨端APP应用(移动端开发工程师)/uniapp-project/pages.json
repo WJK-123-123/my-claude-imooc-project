@@ -1,0 +1,22 @@
+{
+	"pages": [
+		{ "path": "pages/login/login", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/register/register", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/forgot/forgot", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/add/add", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/flow/flow", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/stats/stats", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/profile/profile", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/settings/settings", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/accounts/accounts", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/categories/categories", "style": { "navigationStyle": "custom" } }
+	],
+	"globalStyle": {
+		"navigationStyle": "custom",
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "财务管家",
+		"navigationBarBackgroundColor": "#FFF4F7",
+		"backgroundColor": "#FFF4F7"
+	},
+	"uniIdRouter": {}
+}
