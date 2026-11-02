@@ -1,0 +1,25 @@
+{
+  "name": "financial-steward-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "财务管家测试工程：后端 API 契约 / 前端 E2E / 跨端 APP 纯函数单测（不改动任何业务代码）",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test:unit": "node --test backend/validate.unit.test.js app/util.test.js",
+    "test:api": "node --test \"backend/*.test.js\"",
+    "test:app": "node --test \"app/*.test.js\"",
+    "test": "node --test \"backend/*.test.js\" \"app/*.test.js\"",
+    "test:e2e": "playwright test --config frontend/playwright.config.js",
+    "test:e2e:ui": "playwright test --ui --config frontend/playwright.config.js",
+    "report:frontend": "playwright test --config frontend/playwright.config.js",
+    "report:backend": "node report/generate.mjs backend",
+    "report:app": "node report/generate.mjs app",
+    "report": "npm run report:backend && npm run report:app && npm run report:frontend"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

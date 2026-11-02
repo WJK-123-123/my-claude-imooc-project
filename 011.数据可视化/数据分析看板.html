@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财务管家 · 数据分析看板</title>
+<script src="assets/echarts.min.js"></script>
+<script src="chart_data.js"></script>
+<style>
+  :root {
+    --page: #fbf6f8;          /* 页面底：极浅粉 */
+    --surface: #fcfcfb;       /* 卡片/图表面 */
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --ink-3: #898781;
+    --grid: #e1e0d9;
+    --line: #f0d0da;
+    --accent: #e91e63;
+    --accent-soft: #f8bbd0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 28px 24px 48px; }
+
+  header { margin-bottom: 24px; }
+  header .brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: .5px; }
+  header .tag {
+    font-size: 12px; color: var(--accent); background: var(--accent-soft);
+    padding: 2px 10px; border-radius: 999px; font-weight: 600;
+  }
+  header .sub { margin-top: 8px; color: var(--ink-2); font-size: 13px; }
+  header .sub a { color: var(--accent); text-decoration: none; }
+  header .sub a:hover { text-decoration: underline; }
+
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 22px;
+  }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px 16px 16px;
+  }
+  .kpi .label { font-size: 12px; color: var(--ink-3); margin-bottom: 8px; }
+  .kpi .value { font-size: 24px; font-weight: 700; letter-spacing: .3px; }
+  .kpi .value.pos { color: #006300; }
+  .kpi .hint { font-size: 12px; color: var(--ink-3); margin-top: 6px; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(430px, 1fr)); gap: 18px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px 18px 14px;
+    animation: fade .5s ease both;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .card .desc { font-size: 12px; color: var(--ink-3); margin-bottom: 10px; }
+  .chart { width: 100%; }
+
+  footer { margin-top: 28px; color: var(--ink-3); font-size: 12px; line-height: 1.7; }
+  footer code { background: #fff; border: 1px solid var(--line); padding: 1px 6px; border-radius: 6px; }
+
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 960px) {
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    .grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>财务管家 · 数据分析看板</h1>
+      <span class="tag">随机演示数据</span>
+    </div>
+    <div class="sub">
+      数据来源：<a href="财务管家-数据分析数据文档.xlsx">财务管家-数据分析数据文档.xlsx</a> ·
+      金额单位「元」（库内以「分」整数存储）· 覆盖 22 个月、5,394 笔账单
+    </div>
+  </header>
+
+  <section class="kpi-row" id="kpiRow"></section>
+
+  <main class="grid">
+    <section class="card">
+      <h2>月度支出趋势</h2>
+      <div class="desc">各月支出总金额（元）</div>
+      <div id="c-exp-line" class="chart" style="height:300px"></div>
+    </section>
+
+    <section class="card">
+      <h2>月度收入趋势</h2>
+      <div class="desc">各月收入总金额（元）</div>
+      <div id="c-inc-line" class="chart" style="height:300px"></div>
+    </section>
+
+    <section class="card">
+      <h2>每月记账笔数</h2>
+      <div class="desc">支出 / 收入笔数的堆叠柱状</div>
+      <div id="c-count" class="chart" style="height:300px"></div>
+    </section>
+
+    <section class="card">
+      <h2>支出分类占比</h2>
+      <div class="desc">前 5 大分类 + 其余合并</div>
+      <div id="c-exp-donut" class="chart" style="height:300px"></div>
+    </section>
+
+    <section class="card">
+      <h2>收入分类占比</h2>
+      <div class="desc">各收入来源构成</div>
+      <div id="c-inc-donut" class="chart" style="height:300px"></div>
+    </section>
+
+    <section class="card">
+      <h2>支出分类排行</h2>
+      <div class="desc">支出金额前 12 分类（元）</div>
+      <div id="c-exp-rank" class="chart" style="height:380px"></div>
+    </section>
+
+    <section class="card">
+      <h2>收入分类排行</h2>
+      <div class="desc">各收入来源金额（元）</div>
+      <div id="c-inc-rank" class="chart" style="height:300px"></div>
+    </section>
+
+    <section class="card">
+      <h2>支付账户支出排行</h2>
+      <div class="desc">各支付方式的支出金额（元）</div>
+      <div id="c-acct" class="chart" style="height:300px"></div>
+    </section>
+
+    <section class="card">
+      <h2>用户记账 Top10（按支出）</h2>
+      <div class="desc">支出金额最高的 10 位用户（元）</div>
+      <div id="c-user" class="chart" style="height:360px"></div>
+    </section>
+  </main>
+
+  <footer>
+    说明：以上图表数据为按「财务管家」数据库设计<b>随机生成的演示数据</b>（非真实用户数据）。<br>
+    图表由 ECharts 5 渲染；系列颜色采用色盲安全色板（相邻色 CVD 区分度 ≥ 8），「其他/其他分类」统一用灰色表示。原始明细请见
+    <code>财务管家-数据分析数据文档.xlsx</code> 各 sheet。
+  </footer>
+</div>
+
+<script>
+/* ===== 数据 ===== */
+const D = window.CHART_DATA;
+
+/* ===== 色板（参考 dataviz 已验证的 8 色顺序 + 灰色）===== */
+const C = { blue:'#2a78d6', orange:'#eb6834', aqua:'#1baf7a', yellow:'#eda100',
+            magenta:'#e87ba4', green:'#008300', violet:'#6250d6', red:'#e34948',
+            gray:'#a8a59e' };
+const INK = { primary:'#0b0b0b', secondary:'#52514e', muted:'#898781', grid:'#e1e0d9', axis:'#c3c2b7' };
+
+/* ===== 数字格式化 ===== */
+const fmt  = v => Math.round(v).toLocaleString('zh-CN');
+const fmt2 = v => Number(v).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const yuan = v => '¥' + fmt2(v);
+function wan(v){
+  const a = Math.abs(v);
+  if (a >= 10000) return (v / 10000).toLocaleString('zh-CN', { maximumFractionDigits: 1 }) + '万';
+  return fmt(v);
+}
+const months = D.monthly.months;
+const shortMonth = v => v.slice(2,4) + '/' + v.slice(5,7);
+
+/* ===== 通用 tooltip 样式 ===== */
+const TT = {
+  backgroundColor: '#ffffff', borderColor: INK.grid, borderWidth: 1,
+  textStyle: { color: INK.primary, fontSize: 12 },
+  extraCssText: 'box-shadow:0 4px 14px rgba(0,0,0,.08);border-radius:8px;'
+};
+const AXIS = { lineStyle: { color: INK.axis } };
+const TICK_OFF = { show: false };
+const SPLIT = { lineStyle: { color: INK.grid } };
+
+/* ===== KPI ===== */
+(function renderKPI(){
+  const k = D.kpi;
+  const tiles = [
+    { label: '总支出（元）', value: fmt2(k.total_exp), hint: '支出 ' + fmt(k.exp_count) + ' 笔' },
+    { label: '总收入（元）', value: fmt2(k.total_inc), hint: '收入 ' + fmt(k.inc_count) + ' 笔' },
+    { label: '净结余（元）', value: fmt2(k.net), hint: '总收入 − 总支出', pos: true },
+    { label: '账单总笔数', value: fmt(k.bill_count), hint: '覆盖 ' + k.months + ' 个月' },
+    { label: '活跃用户', value: fmt(k.active_users), hint: '共 60 位注册用户' },
+    { label: '平均单笔支出（元）', value: fmt2(k.avg_exp), hint: '月均支出 ' + fmt(k.avg_month_exp) + ' 元' },
+  ];
+  document.getElementById('kpiRow').innerHTML = tiles.map(t =>
+    '<div class="kpi"><div class="label">' + t.label + '</div>' +
+    '<div class="value' + (t.pos ? ' pos' : '') + '">' + t.value + '</div>' +
+    '<div class="hint">' + t.hint + '</div></div>'
+  ).join('');
+})();
+
+/* ===== 折线（单序列，小倍数）===== */
+function areaGrad(hex){
+  return new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+    { offset: 0, color: hex + '55' }, { offset: 1, color: hex + '06' }
+  ]);
+}
+function lineOption(values, color){
+  return {
+    grid: { left: 8, right: 18, top: 16, bottom: 0, containLabel: true },
+    tooltip: { trigger: 'axis', ...TT, formatter: ps => {
+      const p = ps[0]; return p.axisValue + '<br/>' + p.marker + ' ' + yuan(p.value);
+    }},
+    xAxis: { type: 'category', data: months, boundaryGap: false,
+      axisLine: AXIS, axisTick: TICK_OFF,
+      axisLabel: { color: INK.muted, formatter: shortMonth, interval: 1, margin: 12 } },
+    yAxis: { type: 'value', splitLine: SPLIT, axisLabel: { color: INK.muted, formatter: wan } },
+    series: [{ type: 'line', data: values, smooth: true, symbol: 'circle', symbolSize: 5,
+      lineStyle: { width: 2, color: color }, itemStyle: { color: color },
+      areaStyle: { color: areaGrad(color) },
+      endLabel: { show: true, color: INK.secondary, fontSize: 11, formatter: p => wan(p.value) } }]
+  };
+}
+
+/* ===== 堆叠柱状（每月笔数）===== */
+function countOption(){
+  return {
+    grid: { left: 8, right: 18, top: 42, bottom: 0, containLabel: true },
+    legend: { top: 0, right: 0, textStyle: { color: INK.secondary, fontSize: 12 }, itemWidth: 12, itemHeight: 12 },
+    tooltip: { trigger: 'axis', ...TT, formatter: ps => {
+      const m = ps[0].axisValue;
+      const e = ps.find(p => p.seriesName === '支出笔数');
+      const i = ps.find(p => p.seriesName === '收入笔数');
+      return m + '<br/>' + e.marker + ' 支出 ' + e.value + ' 笔<br/>' + i.marker + ' 收入 ' + i.value + ' 笔<br/>合计 ' + (e.value + i.value) + ' 笔';
+    }},
+    xAxis: { type: 'category', data: months, axisLine: AXIS, axisTick: TICK_OFF,
+      axisLabel: { color: INK.muted, formatter: shortMonth, interval: 1, margin: 12 } },
+    yAxis: { type: 'value', splitLine: SPLIT, axisLabel: { color: INK.muted } },
+    series: [
+      { name: '支出笔数', type: 'bar', stack: 'c', data: D.monthly.exp_count,
+        itemStyle: { color: C.blue }, barMaxWidth: 20 },
+      { name: '收入笔数', type: 'bar', stack: 'c', data: D.monthly.inc_count,
+        itemStyle: { color: C.orange }, barMaxWidth: 20 }
+    ]
+  };
+}
+
+/* ===== 环形图（≤6 段，直标名称+占比）===== */
+function donutOption(data){
+  return {
+    tooltip: { trigger: 'item', ...TT, formatter: p =>
+      p.name + '：' + yuan(p.value) + '（' + p.percent.toFixed(1) + '%）' +
+      (p.data.count ? '<br/>共 ' + p.data.count + ' 笔' : '') },
+    series: [{
+      type: 'pie', radius: ['46%', '70%'], center: ['50%', '50%'],
+      itemStyle: { borderColor: '#fcfcfb', borderWidth: 2 },
+      label: { show: true, color: INK.secondary, fontSize: 11,
+        formatter: p => p.name + ' ' + p.percent.toFixed(1) + '%' },
+      labelLine: { length: 10, length2: 8, lineStyle: { color: INK.axis } },
+      data: data
+    }]
+  };
+}
+
+/* ===== 横向条形（排行，单色，最大在最上）===== */
+function hbarOption(items, color){
+  return {
+    grid: { left: 8, right: 62, top: 16, bottom: 0, containLabel: true },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, ...TT,
+      formatter: ps => { const p = ps[0]; return p.name + '：' + yuan(p.value); } },
+    xAxis: { type: 'value', splitLine: SPLIT, axisLabel: { color: INK.muted, formatter: wan } },
+    yAxis: { type: 'category', data: items.map(i => i.name),
+      axisLine: AXIS, axisTick: TICK_OFF, axisLabel: { color: INK.secondary, fontSize: 12 } },
+    series: [{ type: 'bar', data: items.map(i => i.value),
+      itemStyle: { color: color, borderRadius: [0, 4, 4, 0] }, barMaxWidth: 18,
+      label: { show: true, position: 'right', color: INK.muted, fontSize: 11, formatter: p => wan(p.value) } }]
+  };
+}
+
+/* ===== 纵向柱状（排行）===== */
+function vbarOption(items, color){
+  return {
+    grid: { left: 8, right: 18, top: 24, bottom: 0, containLabel: true },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, ...TT,
+      formatter: ps => { const p = ps[0]; return p.name + '：' + yuan(p.value); } },
+    xAxis: { type: 'category', data: items.map(i => i.name),
+      axisLine: AXIS, axisTick: TICK_OFF, axisLabel: { color: INK.secondary, fontSize: 12 } },
+    yAxis: { type: 'value', splitLine: SPLIT, axisLabel: { color: INK.muted, formatter: wan } },
+    series: [{ type: 'bar', data: items.map(i => i.value),
+      itemStyle: { color: color, borderRadius: [4, 4, 0, 0] }, barMaxWidth: 30,
+      label: { show: true, position: 'top', color: INK.muted, fontSize: 11, formatter: p => wan(p.value) } }]
+  };
+}
+
+/* ===== 组装 ===== */
+const charts = [];
+function mk(id, option){
+  const el = document.getElementById(id);
+  const c = echarts.init(el);
+  c.setOption(option);
+  charts.push(c);
+}
+
+/* 支出环形：前5 + 其余合并 */
+const expTop5 = D.exp_cat.slice(0, 5);
+const expRest = D.exp_cat.slice(5);
+const expDonut = expTop5.map((x, i) => ({
+  name: x.name, value: Math.round(x.amount * 100) / 100, count: x.count,
+  itemStyle: { color: [C.blue, C.orange, C.aqua, C.yellow, C.magenta][i] }
+}));
+expDonut.push({ name: '其他分类', value: Math.round(expRest.reduce((s, x) => s + x.amount, 0) * 100) / 100,
+  count: expRest.reduce((s, x) => s + x.count, 0), itemStyle: { color: C.gray } });
+
+/* 收入环形：工资..红包 用类别色，字面「其他」用灰 */
+const incSlots = [C.blue, C.orange, C.aqua, C.yellow, C.magenta];
+let si = 0;
+const incDonut = D.inc_cat.map(x => ({
+  name: x.name, value: Math.round(x.amount * 100) / 100, count: x.count,
+  itemStyle: { color: x.name === '其他' ? C.gray : incSlots[si++] }
+}));
+
+mk('c-exp-line',  lineOption(D.monthly.exp, C.blue));
+mk('c-inc-line',  lineOption(D.monthly.inc, C.orange));
+mk('c-count',     countOption());
+mk('c-exp-donut', donutOption(expDonut));
+mk('c-inc-donut', donutOption(incDonut));
+mk('c-exp-rank',  hbarOption(D.exp_cat.slice(0, 12).reverse().map(x => ({ name: x.name, value: x.amount })), C.blue));
+mk('c-inc-rank',  vbarOption(D.inc_cat.map(x => ({ name: x.name, value: x.amount })), C.orange));
+mk('c-acct',      vbarOption(D.accounts.slice().sort((a, b) => b.exp - a.exp).map(x => ({ name: x.name, value: x.exp })), C.blue));
+mk('c-user',      hbarOption(D.user_top10.slice().reverse().map(x => ({ name: x.name, value: x.exp })), C.blue));
+
+window.addEventListener('resize', () => charts.forEach(c => c.resize()));
+</script>
+</body>
+</html>

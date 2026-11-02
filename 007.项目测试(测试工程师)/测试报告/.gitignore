@@ -1,0 +1,5 @@
+# 仅保留目录骨架，忽略测试生成的报告产物
+*
+!.gitkeep
+!README.md
+!.gitignore
