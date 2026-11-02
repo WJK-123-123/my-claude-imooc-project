@@ -22,3 +22,6 @@ generated_images/
 
 # 文生图默认输出目录（temp/，不入库）
 temp/
+
+# Python 编译缓存（中间产物，不入库）
+__pycache__/
