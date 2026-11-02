@@ -2,7 +2,7 @@
 // 后端会话方案：Cookie 存明文令牌、库中只存 SHA-256 哈希（httpOnly，JS 不可读），
 // 响应体不含令牌；小程序 / App 不支持浏览器自动 Cookie 持久化，
 // 故在响应头 Set-Cookie 里提取令牌、请求头 Cookie 回传。
-import { BASE_URL, SESSION_COOKIE, TOKEN_KEY } from './config.js';
+import { getBaseUrl, SESSION_COOKIE, TOKEN_KEY } from './config.js';
 
 function getToken() {
   return uni.getStorageSync(TOKEN_KEY) || '';
@@ -26,7 +26,7 @@ export function request(method, url, data) {
     const token = getToken();
     if (token) header['Cookie'] = SESSION_COOKIE + '=' + token;
     uni.request({
-      url: BASE_URL + url,
+      url: getBaseUrl() + url,
       method: method,
       data: data,
       header: header,

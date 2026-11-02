@@ -114,7 +114,7 @@
 
 <script>
 import { get, post, put, clearToken } from '@/common/api.js';
-import { BASE_URL } from '@/common/config.js';
+import { getBaseUrl } from '@/common/config.js';
 import { toast } from '@/common/util.js';
 import TabBar from '@/components/TabBar.vue';
 
@@ -141,9 +141,9 @@ export default {
     },
     avatarUrl() {
       const url = (this.me && this.me.avatarUrl) || '';
-      // 后端存/返回的是相对路径 /uploads/avatars/...，App/鸿蒙端 <image> 无法解析相对地址，需拼上 BASE_URL
-      // （H5 时 BASE_URL 为空，仍走相对路径、由浏览器按同源解析）
-      if (url && url.startsWith('/')) return BASE_URL + url;
+      // 后端存/返回的是相对路径 /uploads/avatars/...，App/鸿蒙端 <image> 无法解析相对地址，需拼上后端地址
+      // （H5 时后端地址为空，仍走相对路径、由浏览器按同源解析）
+      if (url && url.startsWith('/')) return getBaseUrl() + url;
       return url;
     },
     totalCount() { return this.stats ? this.stats.totalCount : 0; },

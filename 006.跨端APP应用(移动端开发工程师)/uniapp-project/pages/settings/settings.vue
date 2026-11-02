@@ -46,6 +46,21 @@
         </view>
       </view>
 
+      <!-- 开发者设置 -->
+      <view class="list-card">
+        <view class="list-item" @tap="showServerModal">
+          <view class="list-item-left">
+            <view class="list-icon"><text>🔗</text></view>
+            <text class="list-text">后端地址</text>
+          </view>
+          <view class="list-right">
+            <text class="list-ver">{{ serverDisplay }}</text>
+            <text class="list-arrow">›</text>
+          </view>
+        </view>
+        <view class="list-tip">真机调试时填后端所在电脑的局域网地址；留空恢复默认地址。</view>
+      </view>
+
       <!-- 账号操作 -->
       <view class="ops">
         <button class="logout-btn" @tap="showLogoutModal">🚪 退出登录</button>
@@ -93,12 +108,27 @@
       </view>
     </view>
 
+    <!-- 后端地址弹窗 -->
+    <view v-if="showServer" class="mask" @tap="showServer = false">
+      <view class="dialog" @tap.stop>
+        <view class="dialog-icon dialog-icon-tertiary"><text>🔗</text></view>
+        <text class="dialog-title">设置后端地址</text>
+        <text class="dialog-desc">真机需与后端电脑连同一 Wi-Fi；留空恢复默认。保存后立即生效（无需重新编译）。</text>
+        <input class="dialog-input" v-model="serverInput" placeholder="如 http://192.168.1.7:3000" placeholder-class="ph" />
+        <view class="dialog-actions">
+          <button class="d-cancel" @tap="resetServer">恢复默认</button>
+          <button class="d-tertiary" @tap="saveServer">保存</button>
+        </view>
+      </view>
+    </view>
+
     <TabBar active="profile" />
   </view>
 </template>
 
 <script>
 import { get, post, clearToken } from '@/common/api.js';
+import { getBaseUrl, API_BASE_KEY } from '@/common/config.js';
 import { toast } from '@/common/util.js';
 import TabBar from '@/components/TabBar.vue';
 
@@ -110,10 +140,18 @@ export default {
       showLogout: false,
       showDelete: false,
       showSuccess: false,
+      showServer: false,
+      serverInput: '',
       deletePassword: '',
       deleteError: '',
       submitting: false
     };
+  },
+  computed: {
+    serverDisplay() {
+      const v = getBaseUrl();
+      return v ? v.replace(/^https?:\/\//, '') : '默认';
+    }
   },
   onLoad() {
     get('/api/auth/me').then((r) => {
@@ -122,6 +160,23 @@ export default {
   },
   methods: {
     toast,
+    showServerModal() {
+      this.serverInput = uni.getStorageSync(API_BASE_KEY) || '';
+      this.showServer = true;
+    },
+    saveServer() {
+      const v = String(this.serverInput || '').trim().replace(/\/+$/, '');
+      if (v) uni.setStorageSync(API_BASE_KEY, v);
+      else uni.removeStorageSync(API_BASE_KEY);
+      this.showServer = false;
+      toast('已保存，新请求立即生效');
+    },
+    resetServer() {
+      uni.removeStorageSync(API_BASE_KEY);
+      this.serverInput = '';
+      this.showServer = false;
+      toast('已恢复默认地址');
+    },
     goProfile() {
       uni.reLaunch({ url: '/pages/profile/profile' });
     },
@@ -319,6 +374,13 @@ export default {
   height: 2rpx;
   background: #f0e5e8;
   margin-left: 136rpx;
+}
+.list-tip {
+  display: block;
+  padding: 0 40rpx 28rpx;
+  font-size: 22rpx;
+  color: #877275;
+  line-height: 1.5;
 }
 
 .ops {
