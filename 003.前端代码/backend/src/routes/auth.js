@@ -40,6 +40,8 @@ router.post('/register', async (req, res, next) => {
     );
     const userId = result.insertId;
     await conn.commit();
+    conn.release(); // 成功路径必须释放连接，否则每次注册泄漏 1 个池连接（耗尽后全库查询永久挂起）
+    conn = null;    // 置空避免后续异常时 catch 重复释放
 
     await createSession(res, userId); // 注册成功即自动登录（F1-4）
     res.json({ user: { id: userId, username } });
