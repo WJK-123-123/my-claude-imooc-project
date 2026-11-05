@@ -1,0 +1,178 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_stack" name="shell-type"><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#fff8f9;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "tertiary": "#ae2f34",
+          "surface-dim": "#e2d7da",
+          "outline-variant": "#dac0c4",
+          "on-primary-fixed": "#3f0018",
+          "on-secondary-fixed": "#002018",
+          "surface-container": "#f6ebee",
+          "surface-container-low": "#fcf1f4",
+          "on-primary-container": "#79243f",
+          "tertiary-fixed-dim": "#ffb3b0",
+          "on-tertiary-container": "#88111d",
+          "primary-fixed": "#ffd9e0",
+          "on-surface": "#1f1a1d",
+          "on-secondary-container": "#00725c",
+          "on-secondary-fixed-variant": "#005140",
+          "secondary-container": "#75f9d4",
+          "surface-container-high": "#f0e5e8",
+          "on-background": "#1f1a1d",
+          "surface-container-lowest": "#ffffff",
+          "on-tertiary-fixed-variant": "#8c1520",
+          "surface-container-highest": "#eae0e3",
+          "inverse-on-surface": "#f9eef1",
+          "secondary-fixed": "#75f9d4",
+          "inverse-surface": "#342f31",
+          "on-tertiary-fixed": "#410006",
+          "secondary": "#006b56",
+          "on-primary": "#ffffff",
+          "on-primary-fixed-variant": "#7d2742",
+          "outline": "#877275",
+          "background": "#fff8f9",
+          "surface-variant": "#eae0e3",
+          "primary-container": "#ff8fab",
+          "primary": "#9b3f5a",
+          "surface": "#fff8f9",
+          "inverse-primary": "#ffb1c2",
+          "tertiary-fixed": "#ffdad8",
+          "secondary-fixed-dim": "#55dcb9",
+          "error-container": "#ffdad6",
+          "surface-tint": "#9b3f5a",
+          "tertiary-container": "#ff928f",
+          "on-error": "#ffffff",
+          "surface-bright": "#fff8f9",
+          "on-secondary": "#ffffff",
+          "error": "#ba1a1a",
+          "on-surface-variant": "#544245",
+          "on-error-container": "#93000a",
+          "primary-fixed-dim": "#ffb1c2",
+          "on-tertiary": "#ffffff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-xs": "0.25rem",
+          "space-md": "1rem",
+          "gutter": "1rem",
+          "space-xl": "2rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1.5rem"
+        },
+        "fontFamily": {
+          "body-lg": ["Plus Jakarta Sans"],
+          "headline-xl": ["Quicksand"],
+          "body-md": ["Plus Jakarta Sans"],
+          "label-sm": ["Plus Jakarta Sans"],
+          "headline-lg": ["Quicksand"],
+          "body-sm": ["Plus Jakarta Sans"],
+          "label-lg": ["Plus Jakarta Sans"],
+          "label-md": ["Plus Jakarta Sans"],
+          "headline-md": ["Quicksand"]
+        },
+        "fontSize": {
+          "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0px", "fontWeight": "500" }],
+          "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.5px", "fontWeight": "700" }],
+          "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0px", "fontWeight": "400" }],
+          "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.4px", "fontWeight": "600" }],
+          "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.3px", "fontWeight": "600" }],
+          "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+          "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+          "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+          "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "0px", "fontWeight": "600" }]
+        }
+      }
+    }
+  }
+</script><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Quicksand:wght@600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    /* 图标字体（Material Symbols 连字）就绪前先隐藏，避免刷新时闪现英文图标名；JS 禁用时不加类、不受影响 */
+    html.icons-loading .material-symbols-outlined {
+      visibility: hidden;
+    }
+  </style>
+  <script>document.documentElement.classList.add('icons-loading');</script>
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><main class="flex flex-col relative w-full px-gutter pt-space-lg pb-space-xl bg-[#FFF4F7] flex-1"><div class="flex flex-col w-full max-w-md mx-auto items-center py-space-md">
+<!-- 顶栏：返回 + 标题 + 版本徽章 -->
+<div class="flex items-center gap-space-sm w-full mb-space-md">
+<button class="w-10 h-10 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-on-surface active:scale-95 transition-all shrink-0" onclick="history.back()" type="button" aria-label="返回">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">隐私政策</h1>
+<span class="ml-auto shrink-0 font-label-md text-label-md text-on-surface-variant bg-surface-container-lowest rounded-full px-3 py-1 shadow-sm">V1.0</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline w-full mb-space-md">更新日期：2026-11-05 · 生效日期：2026-11-05</p>
+<!-- 正文卡片 -->
+<div class="w-full bg-surface-container-lowest rounded-3xl p-space-lg shadow-[0_16px_32px_rgba(155,63,90,0.06)] space-y-space-md text-on-surface-variant font-body-md text-body-md leading-relaxed">
+<section>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-space-sm">一、我们收集哪些信息</h2>
+<p>遵循最小化收集原则，我们仅收集以下信息：</p>
+<p>1. <b class="text-on-surface">账号信息</b>：用户名与密码。密码仅以不可逆加密哈希（bcrypt）形式存储，平台无法获知您的密码明文。</p>
+<p>2. <b class="text-on-surface">记账数据</b>：您记录的账单（类型、金额、分类、支付方式标记、备注、日期）、自定义分类与账户、头像图片。</p>
+<p>3. <b class="text-on-surface">登录凭据</b>：登录后浏览器保存的会话 Cookie（仅存不可逆哈希，30 天有效）。</p>
+<p>我们不收集手机号、身份证等实名信息，不采集设备敏感信息，不做个性化推荐。</p>
+</section>
+<section>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-space-sm">二、信息的用途</h2>
+<p>您的信息仅用于提供与维护产品功能：登录与多设备数据同步、记账与流水展示、年度统计、账号安全保护（如异常登录锁定）。我们不将您的数据用于任何营销用途。</p>
+</section>
+<section>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-space-sm">三、保存期限</h2>
+<p>记账数据在您的账号存续期间保存。您申请注销账号后进入 7 天冷静期，期间可登录撤销；冷静期满后，账号与全部账单数据将被不可恢复地删除。</p>
+</section>
+<section>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-space-sm">四、您的权利</h2>
+<p>1. <b class="text-on-surface">查询与更正</b>：您可随时在流水、统计及分类/账户管理页查看、编辑自己的数据。</p>
+<p>2. <b class="text-on-surface">留存</b>：您可在统计页导出年度统计报表自行留存。</p>
+<p>3. <b class="text-on-surface">注销</b>：您可通过「我的 → 设置 → 注销账号」删除账号与全部数据（需密码确认，7 天冷静期）。</p>
+</section>
+<section>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-space-sm">五、信息的共享</h2>
+<p><b class="text-on-surface">我们不向任何第三方共享、出售您的个人信息。</b>除法律法规要求或主管部门依法定程序要求外，不会向外部提供您的数据。</p>
+</section>
+<section>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-space-sm">六、Cookie 与本地存储说明</h2>
+<p>我们仅使用登录会话 Cookie（httpOnly，脚本不可读取）维持登录状态；不使用任何第三方跟踪 Cookie 或广告标识。</p>
+</section>
+<section>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-space-sm">七、政策更新</h2>
+<p>本政策如有修订，我们将更新页面顶部的版本号与更新日期并在产品内公示。若您在修订后继续使用，即视为接受修订内容。</p>
+</section>
+</div>
+<div class="flex items-center gap-space-xs mt-space-lg text-outline justify-center">
+<span class="material-symbols-outlined text-[16px]">eco</span>
+<span class="font-body-sm text-body-sm">每一笔记账，都是对生活的小小热爱</span>
+</div>
+</div></main>
+<script>
+    // 图标字体就绪后再显示图标；此处内联脚本会等 head 里的字体样式表加载完才执行，3 秒超时兜底
+    (function () {
+      var ready = false;
+      function once() {
+        if (ready) return;
+        ready = true;
+        document.documentElement.classList.remove('icons-loading');
+      }
+      try {
+        document.fonts.load('20px "Material Symbols Outlined"').then(once, once);
+      } catch (e) {
+        once();
+        return;
+      }
+      setTimeout(once, 3000);
+    })();
+  </script>
+<!-- proto-nav -->
+<script src="../assets/proto-nav.js?v=20261105-1" data-page="15_privacy_policy"></script>
+</body></html>

@@ -38,6 +38,17 @@
         </view>
       </view>
 
+      <view class="field">
+        <text class="field-label">图形验证码</text>
+        <view class="captcha-row">
+          <view class="input-wrap captcha-wrap">
+            <text class="input-icon">🔢</text>
+            <input class="input" type="number" v-model="captchaCode" placeholder="输入右侧 4 位数字" placeholder-class="ph" maxlength="4" />
+          </view>
+          <image class="captcha-img" :src="captchaImg" mode="aspectFill" @tap="loadCaptcha" />
+        </view>
+      </view>
+
       <text v-if="error" class="err">{{ error }}</text>
 
       <button class="btn-primary" :disabled="submitting" @tap="submit">
@@ -70,7 +81,7 @@
 </template>
 
 <script>
-import { post } from '@/common/api.js';
+import { get, post } from '@/common/api.js';
 
 export default {
   data() {
@@ -78,13 +89,29 @@ export default {
       username: '',
       password: '',
       confirmPassword: '',
+      captchaId: '',
+      captchaCode: '',
+      captchaImg: '',
       showPwd: false,
       error: '',
       showRule: false,
       submitting: false
     };
   },
+  onShow() {
+    this.loadCaptcha();
+  },
   methods: {
+    // 图形验证码（后端 /api/auth/captcha，PNG data URL，一次性、5 分钟有效）；看不清点图刷新
+    loadCaptcha() {
+      this.captchaId = '';
+      get('/api/auth/captcha').then((res) => {
+        if (res.status >= 200 && res.status < 300 && res.data && res.data.captchaId) {
+          this.captchaId = res.data.captchaId;
+          this.captchaImg = res.data.image;
+        }
+      }).catch(() => { /* 预览/离线时静默，提交时报错兜底 */ });
+    },
     togglePwd() {
       this.showPwd = !this.showPwd;
     },
@@ -109,18 +136,30 @@ export default {
         this.error = '两次输入的密码不一致';
         return;
       }
+      if (!this.captchaCode) {
+        this.error = '请输入图形验证码';
+        return;
+      }
       if (this.passwordInvalid()) {
         this.showRule = true;
         return;
       }
       this.submitting = true;
       this.error = '';
-      post('/api/auth/reset-password', { username, password, confirmPassword }).then((res) => {
+      post('/api/auth/reset-password', {
+        username,
+        password,
+        confirmPassword,
+        captchaId: this.captchaId,
+        captchaCode: this.captchaCode
+      }).then((res) => {
         if (res.status >= 200 && res.status < 300) {
-          uni.redirectTo({ url: '/pages/login/login' });
+          uni.redirectTo({ url: '/pages/login/login' }); // 重置成功回登录页，旧密码与既有登录态一并失效
           return;
         }
         this.submitting = false;
+        this.loadCaptcha(); // 验证码一次性已作废，失败后刷新重取
+        this.captchaCode = '';
         this.error = res.data.message || '重置失败，请稍后再试';
       }).catch(() => {
         this.submitting = false;
@@ -229,6 +268,21 @@ export default {
   position: absolute;
   right: 32rpx;
   font-size: 36rpx;
+}
+.captcha-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+.captcha-wrap {
+  flex: 1;
+}
+.captcha-img {
+  width: 220rpx;
+  height: 96rpx;
+  border-radius: 32rpx;
+  background: #fcf1f4;
+  flex-shrink: 0;
 }
 .ph {
   color: #dac0c4;

@@ -18,11 +18,13 @@ async function setup() {
   };
 }
 
-// 本月某日（避免用例与运行月份耦合）
+// 本月某日（避免用例与运行月份耦合）；指定的日子若在今天之后则收敛到今天，
+// 保证夹具日期 ≤ 今天（PRD F3-6：后端自 2026-11-05 起在 API 层拦截未来日期）
 function thisMonthDay(day) {
   const now = new Date();
   const pad = (n) => String(n).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(day)}`;
+  const d = Math.min(day, now.getDate());
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(d)}`;
 }
 
 test('BE-201/202 GET /api/bills：默认本月 + 整数 summary + balance 无浮点', async () => {

@@ -131,6 +131,6 @@ npm run test:e2e
 ## 六、注意事项
 
 1. **不改动业务代码**：本工程只读 import 后端的 `validate.js` 与 006 的 `util.js`，其余全部经 HTTP 接口联调；测试数据使用随机唯一账号，不污染既有数据（锁定/注销残留账号 7 天后后端懒清扫）。
-2. **最高安全风险**：`/reset-password` 免验证码直改在 `auth.test.js` 中已作为用例（BE-014/015）保留，测试结论需在报告中显式标注供产品决策。
+2. **找回密码安全**（2026-11-05 已加固）：`/reset-password` 已要求图形验证码（一次性、5 分钟有效）+ 每 IP 限流，重置成功吊销全部会话；BE-014/015 改为验证码契约用例（缺码/错码/一次性/存在性不泄露），重置成功路径由 `backend/captcha.unit.test.js`（生成/校验循环）与人工主流程覆盖。
 3. **前端 E2E 需联网**：页面依赖 Tailwind CDN / 字体图标；断网环境只跑 `test:unit` / `test:api`。
 4. **报告脚本需在 `tests/` 目录下执行**：`report:api` 的 `--test-reporter-destination` 相对路径以本目录为基准。

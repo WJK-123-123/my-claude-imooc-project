@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import pool from '../db.js';
 import { validateUsername, validatePassword } from '../utils/validate.js';
 import { createSession, deleteSession, clearSessionCookie, SESSION_COOKIE } from '../utils/session.js';
+import { createCaptcha, verifyCaptcha } from '../utils/captcha.js';
+import { rateLimit } from '../utils/rate-limit.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 
 const router = Router();
@@ -11,6 +13,10 @@ const router = Router();
 const DUMMY_HASH = bcrypt.hashSync('financial-steward-dummy', 10);
 const LOCK_THRESHOLD = 5; // 连续密码错误 ≥ 5 次锁定（PRD F1-3）
 const LOCK_MINUTES = 10;
+
+// 找回密码两接口的每 IP 限流（配合图形验证码防脚本批量重置）
+const captchaLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, message: '验证码获取过于频繁，请稍后再试' });
+const resetLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, message: '重试过于频繁，请稍后再试' });
 
 function fail(res, status, message) {
   return res.status(status).json({ message });
@@ -134,13 +140,27 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
-/* ================= 找回密码：重置密码（简化版，暂未接入验证码） ================= */
-router.post('/reset-password', async (req, res, next) => {
+/* ================= 图形验证码（找回密码身份核验，PRD F1-5） ================= */
+// 无需登录；返回 data URL，Web <img> 与 uniapp <image> 通用。验证码一次性、5 分钟有效
+router.get('/captcha', captchaLimiter, (req, res) => {
+  const { id, pngBase64 } = createCaptcha();
+  res.json({ captchaId: id, image: 'data:image/png;base64,' + pngBase64 });
+});
+
+/* ================= 找回密码：图形验证码 + 重置（PRD F1-5，不接短信/邮箱通道） ================= */
+router.post('/reset-password', resetLimiter, async (req, res, next) => {
   try {
-    const { username, password, confirmPassword } = req.body || {};
+    const { username, password, confirmPassword, captchaId, captchaCode } = req.body || {};
     const invalid = validatePassword(password);
     if (invalid) return fail(res, 400, invalid);
     if (password !== confirmPassword) return fail(res, 400, '两次输入的密码不一致');
+
+    // 验证码先行且一次性（对/错均作废）：每次重置尝试都要付出一次「人机识别」成本，
+    // 挡脚本批量重置与撞库探测；放在用户名查询之前，用户名存在性不泄露给未过码的请求
+    if (!captchaId || !captchaCode) return fail(res, 400, '请输入图形验证码');
+    if (!verifyCaptcha(String(captchaId), String(captchaCode))) {
+      return fail(res, 400, '验证码不正确或已过期，请刷新后重试');
+    }
 
     const [rows] = await pool.query(
       'SELECT id, username, status FROM user WHERE username = ?',
@@ -156,6 +176,8 @@ router.post('/reset-password', async (req, res, next) => {
       'UPDATE user SET password_hash = ?, failed_login_count = 0, locked_until = NULL WHERE id = ?',
       [passwordHash, user.id]
     );
+    // 重置即吊销该用户全部既有会话：旧密码与已登录态一并失效，防止重置后被旧会话继续操作
+    await pool.query('DELETE FROM user_session WHERE user_id = ?', [user.id]);
 
     // 重置成功即回登录页，不自动登录（PRD F1-5「重置成功跳回登录页」）
     res.json({ message: '密码重置成功，请重新登录' });

@@ -29,6 +29,13 @@ async function resolveBillPayload(req) {
   if (accountId != null && (!Number.isInteger(accountId) || accountId <= 0)) return { error: '账户不合法' };
   if (note.length > NOTE_MAX) return { error: `备注最多 ${NOTE_MAX} 个字` };
   if (typeof billDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(billDate)) return { error: '日期不合法' };
+  // 日期范围 2000-01-01 至今天（PRD F3-6，与 004 bill 表 CHECK 下限对齐）。
+  // 前端日历只挡了界面输入，这里在 API 层兜底拦截未来/超早日期，防止直发请求绕过
+  // 造成「流水里看得见、年度统计收口本年后消失」的口径不一致
+  const now = new Date();
+  const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  if (billDate < '2000-01-01') return { error: '日期不能早于 2000-01-01' };
+  if (billDate > today) return { error: '日期不能晚于今天' };
 
   const [catRows] = await pool.query(
     'SELECT id FROM category WHERE id = ? AND user_id = ? AND scope = ?',

@@ -49,7 +49,7 @@
 
       <view class="check agree" @tap="agree = !agree">
         <view class="check-box" :class="{ on: agree }"><text v-if="agree" class="check-mark">✓</text></view>
-        <text class="check-label agree-label">我已阅读并同意 用户协议 与 隐私政策</text>
+        <text class="check-label agree-label">我已阅读并同意 <text class="agree-link" @tap.stop="goAgreement">用户协议</text> 与 <text class="agree-link" @tap.stop="goPrivacy">隐私政策</text></text>
       </view>
     </view>
 
@@ -85,6 +85,12 @@ export default {
     };
   },
   methods: {
+    goAgreement() {
+      uni.navigateTo({ url: '/pages/agreement/agreement' });
+    },
+    goPrivacy() {
+      uni.navigateTo({ url: '/pages/privacy/privacy' });
+    },
     togglePwd() {
       this.showPwd = !this.showPwd;
     },
@@ -299,6 +305,10 @@ export default {
 .agree {
   margin-top: 32rpx;
   justify-content: center;
+}
+.agree-link {
+  color: #9b3f5a;
+  text-decoration: underline;
 }
 .agree-label {
   font-size: 24rpx;

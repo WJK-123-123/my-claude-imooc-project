@@ -34,7 +34,7 @@ app.use('/api', (req, res) => res.status(404).json({ message: '接口不存在' 
 
 // ---- 页面登录守卫（PRD §8：未登录时除登录/注册/找回密码外全部重定向登录页） ----
 // 服务端权威拦截 /pages/ 下的 .html；截图等非 HTML 资源与 /assets 不受限
-const PUBLIC_PAGES = new Set(['02_login.html', '02_register.html', '03_forgot_password.html']);
+const PUBLIC_PAGES = new Set(['02_login.html', '02_register.html', '03_forgot_password.html', '14_user_agreement.html', '15_privacy_policy.html']);
 app.use('/pages', async (req, res, next) => {
   try {
     const file = req.path.split('/').pop() || '';

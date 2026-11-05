@@ -88,24 +88,56 @@ test('BE-012 登出：清会话，旧 Cookie 再访问 401', async () => {
   assert.equal(me.status, 401);
 });
 
-test('BE-014/015 找回密码（⚠ 当前免验证码直改）：不存在→404；重置成功→旧密码失效', async () => {
-  const no = await api('/api/auth/reset-password', {
-    method: 'POST',
-    body: { username: uniqueName('nx'), password: TEST_PASSWORD, confirmPassword: TEST_PASSWORD },
-  });
-  assert.equal(no.status, 404);
+// 取一张图形验证码（契约：captchaId + PNG data URL）。验证码一次性：对/错均作废
+async function fetchCaptcha() {
+  const r = await api('/api/auth/captcha');
+  assert.equal(r.status, 200);
+  assert.ok(r.data.captchaId);
+  assert.match(r.data.image, /^data:image\/png;base64,/);
+  return r.data.captchaId;
+}
 
+test('BE-014 找回密码：缺验证码 / 验证码错误 → 400；验证码一次性作废', async () => {
   const u = uniqueName('rp');
   await register(u);
-  const newPw = 'NewPass123!';
-  const ok = await api('/api/auth/reset-password', {
-    method: 'POST',
-    body: { username: u, password: newPw, confirmPassword: newPw },
+  const base = { username: u, password: 'NewPass123!', confirmPassword: 'NewPass123!' };
+
+  const missing = await api('/api/auth/reset-password', { method: 'POST', body: base });
+  assert.equal(missing.status, 400);
+  assert.equal(missing.data.message, '请输入图形验证码');
+
+  const id = await fetchCaptcha();
+  // 5 位输入必与 4 位真码不等，可确定性触发「验证码错误」（免随机撞码抖动）
+  const wrong = await api('/api/auth/reset-password', {
+    method: 'POST', body: { ...base, captchaId: id, captchaCode: '00000' },
   });
-  assert.equal(ok.status, 200);
-  assert.equal((await login(u, TEST_PASSWORD)).status, 401); // 旧密码立即失效
-  assert.equal((await login(u, newPw)).status, 200);          // 新密码可登录
+  assert.equal(wrong.status, 400);
+  assert.match(wrong.data.message, /验证码不正确/);
+
+  // 一次性：同一 captchaId 第二次尝试（即使码对）也被拒
+  const reuse = await api('/api/auth/reset-password', {
+    method: 'POST', body: { ...base, captchaId: id, captchaCode: '0000' },
+  });
+  assert.equal(reuse.status, 400);
+  assert.match(reuse.data.message, /验证码不正确/);
 });
+
+test('BE-015 找回密码：验证码未通过前不泄露用户名存在性（404 须在过码之后）', async () => {
+  const id = await fetchCaptcha();
+  const r = await api('/api/auth/reset-password', {
+    method: 'POST',
+    body: {
+      username: uniqueName('nx'), password: 'NewPass123!', confirmPassword: 'NewPass123!',
+      captchaId: id, captchaCode: '00000',
+    },
+  });
+  // 用户名不存在，但先报验证码错——用户名存在性不给未过码的请求探测
+  assert.equal(r.status, 400);
+  assert.match(r.data.message, /验证码不正确/);
+});
+
+// 说明：重置成功路径（200 → 旧密码失效 → 全部会话吊销 → 新密码可登录）需读出图中数字，
+// 自动化不做 OCR；生成/校验循环由 captcha.unit.test.js 覆盖，端到端按仓库惯例人工过主流程。
 
 test('BE-016/017 注销：错密码 401；对密码 → deleting 冷静期 + 清会话；期内登录可撤销', async () => {
   const u = uniqueName('deact');

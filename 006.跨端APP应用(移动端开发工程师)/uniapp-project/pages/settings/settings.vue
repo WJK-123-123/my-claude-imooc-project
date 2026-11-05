@@ -18,7 +18,7 @@
 
       <!-- 通用设置 -->
       <view class="list-card">
-        <view class="list-item">
+        <view class="list-item" @tap="goAgreement">
           <view class="list-item-left">
             <view class="list-icon"><text>📄</text></view>
             <text class="list-text">用户协议</text>
@@ -26,7 +26,7 @@
           <text class="list-arrow">›</text>
         </view>
         <view class="list-divider"></view>
-        <view class="list-item">
+        <view class="list-item" @tap="goPrivacy">
           <view class="list-item-left">
             <view class="list-icon"><text>🔐</text></view>
             <text class="list-text">隐私政策</text>
@@ -176,6 +176,12 @@ export default {
       this.serverInput = '';
       this.showServer = false;
       toast('已恢复默认地址');
+    },
+    goAgreement() {
+      uni.navigateTo({ url: '/pages/agreement/agreement' });
+    },
+    goPrivacy() {
+      uni.navigateTo({ url: '/pages/privacy/privacy' });
     },
     goProfile() {
       uni.reLaunch({ url: '/pages/profile/profile' });

@@ -1,7 +1,7 @@
 /* 财务管家 · 原型共享脚本：按 PRD 流程的按钮接线
    由 inject_nav.py 在每页 </body> 前注入引用：
    <script src="../assets/proto-nav.js" data-page="02_register"></script>
-   11 张页面全部平铺在 pages/ 下（02_login.html … 13_category_manage.html，无 04 场景引导页与 09 账单详情页——均已删），
+   13 张页面全部平铺在 pages/ 下（02_login.html … 15_privacy_policy.html，无 04 场景引导页与 09 账单详情页——均已删），
    **默认首页为 pages/02_login.html**（登录页）；02_register 为注册页，两页分立（PRD F1）；
    12/13 为「我的」页延伸的账户/分类管理页（原型扩展，非 PRD V1 范围）。
    原「悬浮 🧭 导航」按钮及其面板已于 2026-10-19 删除。 */
@@ -107,7 +107,7 @@
      服务端已对 /pages/ 下非公开 .html 做 302 拦截；此处兜底浏览器返回键/内存缓存快照：
      仅当后端明确返回 401 才跳登录页，404/网络异常不跳——兼容 python http.server
      纯原型预览（无后端时页面照常可看）。 */
-  var PUBLIC_PAGES = { '02_login': 1, '02_register': 1, '03_forgot_password': 1 };
+  var PUBLIC_PAGES = { '02_login': 1, '02_register': 1, '03_forgot_password': 1, '14_user_agreement': 1, '15_privacy_policy': 1 };
   if (PAGE && !PUBLIC_PAGES[PAGE]) {
     fetch('/api/auth/me').then(function (r) {
       if (r.status === 401) location.replace('02_login.html');

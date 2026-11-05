@@ -46,8 +46,9 @@
 
       <view class="check agree" @tap="agree = !agree">
         <view class="check-box" :class="{ on: agree }"><text v-if="agree" class="check-mark">✓</text></view>
-        <text class="check-label agree-label">同意 用户服务协议 与 隐私政策</text>
+        <text class="check-label agree-label">同意 <text class="agree-link" @tap.stop="goAgreement">用户服务协议</text> 与 <text class="agree-link" @tap.stop="goPrivacy">隐私政策</text></text>
       </view>
+      <text class="age-note">本产品面向 18 岁以上用户</text>
     </view>
 
     <view class="center">
@@ -91,6 +92,12 @@ export default {
     };
   },
   methods: {
+    goAgreement() {
+      uni.navigateTo({ url: '/pages/agreement/agreement' });
+    },
+    goPrivacy() {
+      uni.navigateTo({ url: '/pages/privacy/privacy' });
+    },
     togglePwd() {
       this.showPwd = !this.showPwd;
     },
@@ -297,6 +304,17 @@ export default {
 .agree {
   margin-top: 32rpx;
   justify-content: center;
+}
+.agree-link {
+  color: #9b3f5a;
+  text-decoration: underline;
+}
+.age-note {
+  display: block;
+  margin-top: 12rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #877275;
 }
 .agree-label {
   font-size: 24rpx;

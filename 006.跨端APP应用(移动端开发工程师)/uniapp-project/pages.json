@@ -9,7 +9,9 @@
 		{ "path": "pages/profile/profile", "style": { "navigationStyle": "custom" } },
 		{ "path": "pages/settings/settings", "style": { "navigationStyle": "custom" } },
 		{ "path": "pages/accounts/accounts", "style": { "navigationStyle": "custom" } },
-		{ "path": "pages/categories/categories", "style": { "navigationStyle": "custom" } }
+		{ "path": "pages/categories/categories", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/agreement/agreement", "style": { "navigationStyle": "custom" } },
+		{ "path": "pages/privacy/privacy", "style": { "navigationStyle": "custom" } }
 	],
 	"globalStyle": {
 		"navigationStyle": "custom",

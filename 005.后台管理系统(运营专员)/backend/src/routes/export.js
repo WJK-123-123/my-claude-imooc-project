@@ -23,9 +23,12 @@ function centsToYuan(c) {
   return `${yuan}.${String(fen).padStart(2, '0')}`;
 }
 
-// CSV 单元格：统一双引号包裹，内部双引号转义
+// CSV 单元格：统一双引号包裹，内部双引号转义；
+// 以 = + - @ 或制表符/回车开头的值加单引号前缀，防 Excel/WPS 把用户可控字段
+// （用户名/备注/分类名等）当公式执行（CSV 公式注入）
 function csvCell(v) {
-  const s = v == null ? '' : String(v);
+  let s = v == null ? '' : String(v);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
   return `"${s.replace(/"/g, '""')}"`;
 }
 

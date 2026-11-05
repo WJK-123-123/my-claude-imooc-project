@@ -48,6 +48,24 @@ test('BE-104 分类 scope 不匹配 → 400（收入账单用支出分类）', a
   assert.equal(r.data.message, '分类不存在或与类型不符');
 });
 
+test('BE-106 日期格式与越界：非 YYYY-MM-DD / 早于 2000-01-01 / 晚于今天 → 400（PRD F3-6）', async () => {
+  const f = await setup();
+  const bad = await api('/api/bills', { method: 'POST', cookie: f.cookie, body: { ...f.valid, billDate: '2026/10/01' } });
+  assert.equal(bad.status, 400);
+  assert.equal(bad.data.message, '日期不合法');
+
+  const early = await api('/api/bills', { method: 'POST', cookie: f.cookie, body: { ...f.valid, billDate: '1999-12-31' } });
+  assert.equal(early.status, 400);
+  assert.equal(early.data.message, '日期不能早于 2000-01-01');
+
+  const d = new Date();
+  d.setDate(d.getDate() + 30); // 未来 30 天必然晚于「今天」
+  const future = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const late = await api('/api/bills', { method: 'POST', cookie: f.cookie, body: { ...f.valid, billDate: future } });
+  assert.equal(late.status, 400);
+  assert.equal(late.data.message, '日期不能晚于今天');
+});
+
 test('BE-103 横向越权：用他人分类记账 → 400', async () => {
   const f = await setup();
   const other = await setup();
